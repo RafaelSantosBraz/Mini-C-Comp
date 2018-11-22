@@ -3,6 +3,9 @@
 #define X "as"
 
 int main(){  
-    printf("%s", X);
+    if (X == "as"){
+        int aux;
+        scanf("%d", &aux);
+    }
     return 0;
 }

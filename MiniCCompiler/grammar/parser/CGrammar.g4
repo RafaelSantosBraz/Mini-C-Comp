@@ -60,8 +60,8 @@ printargs       : expr ',' printargs                                            
 scan            : SCANF '(' STR ',' scanargs')'      
                 ;
 
-scanargs        : ID ',' scanargs                                               #scanargsCompose
-                | ID                                                            #scanargsSingle
+scanargs        : '&' ID ',' scanargs                                           #scanargsCompose
+                | '&' ID                                                        #scanargsSingle
                 ;
 
 expr            : expr '+' term                                                 #exprPlus
@@ -77,6 +77,7 @@ term            : term '*' fact                                                 
 
 fact            : NUM                                                           #factNum
                 | ID                                                            #factVar
+                | STR                                                           #factStr
                 | funccall                                                      #factFunc
                 | '(' expr ')'                                                  #factExpr
                 ;
@@ -138,6 +139,7 @@ LESSEQ  : '<=';
 EQ      : '==';
 NEQ     : '!=';
 OR      : '||';
+ADRESS  : '&';
 AND     : '&&';
 NOT     : '!';
 INC     : '#include';
@@ -153,7 +155,7 @@ CHAR    : 'char';
 VOID    : 'void';
 NUM     : '-'?[0-9]+('.'[0-9]+)?;
 ID      : [_a-zA-Z][_a-zA-Z0-9]*;
-LIB     : (~["\\\r\n,>< (){}#;])+;
+LIB     : (~["\\\r\n,>< (){}#;&])+;
 STR     : '"'(~["\\\r\n])*'"';
 WS      : [ \t\r\n]+ -> skip;
 COM     : '//'(~[\r\n])*'\r'?'\n' -> skip;
