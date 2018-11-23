@@ -14,9 +14,13 @@ include         : INC '<' LIB '>'                                               
                 | INC STR                                                       #includesExternal           
                 ;
 
-define          : DEF ID NUM                                                    #defineNUM
+define          : DEF ID num                                                    #defineNUM
                 | DEF ID STR                                                    #defineSTR
                 | DEF ID CHARC                                                  #defineChar
+                ;
+
+num             : NUMINT
+                | NDOUBLE
                 ;
 
 function        : returntype ID '(' param* ')' '{' cmd* '}'
@@ -57,8 +61,12 @@ cmd             : atrib EOL                                                     
 swtstm          : SWITCH '(' expr ')' '{' cases* dfault?'}'  
                 ;
 
-cases           : CASE (NUM|CHARC) ':' cmd* BREAK?                              #caseSimple
-                | CASE (NUM|CHARC) ':' '{' cmd* BREAK? '}'                      #caseBlock
+cases           : CASE casetype ':' cmd* BREAK?                                 #caseSimple
+                | CASE casetype ':' '{' cmd* BREAK? '}'                         #caseBlock
+                ;
+
+casetype        : NUMINT                                                        #casetypeInt
+                | CHARC                                                         #casetypeChar
                 ;
 
 dfault          : DEFAULT ':' cmd* BREAK?                                       #defaultSimple
@@ -97,7 +105,7 @@ term            : term '*' fact                                                 
                 | fact                                                          #termFact
                 ;
 
-fact            : NUM                                                           #factNum
+fact            : num                                                           #factNum
                 | STR                                                           #factStr
                 | CHARC                                                         #factChar
                 | funccall                                                      #factCall
@@ -197,7 +205,8 @@ DOUBLE  : 'double';
 CHAR    : 'char';
 VOID    : 'void';
 CHARC   : ['] (~[']) ['];
-NUM     : '-'?[0-9]+('.'[0-9]+)?;
+NUMINT  : '-'?[0-9]+;
+NDOUBLE : NUMINT'.'[0-9]+;
 ID      : [_a-zA-Z][_a-zA-Z0-9]*;
 LIB     : (~(["\\\r\n <>(){}#;&*,]|'['|']'))+;
 STR     : '"'(~["\\\r\n])*'"';
