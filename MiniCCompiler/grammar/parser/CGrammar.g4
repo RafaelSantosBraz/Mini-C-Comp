@@ -16,6 +16,7 @@ include         : INC '<' LIB '>'                                               
 
 define          : DEF ID NUM                                                    #defineNUM
                 | DEF ID STR                                                    #defineSTR
+                | DEF ID CHARC                                                  #defineChar
                 ;
 
 function        : returntype ID '(' param* ')' '{' cmd* '}'
@@ -30,8 +31,13 @@ type            : INT                                                           
                 | CHAR                                                          #typeChar
                 ;
 
-param           : type ID ',' param                                             #paramCompose
-                | type ID                                                       #paramSingle
+param           : paramcomplx  ',' param                                        #paramCompose
+                | paramcomplx                                                   #paramSingle
+                ;
+
+paramcomplx     : type ID                                                       #paramByValue
+                | type '*' ID                                                   #paramByPointer
+                | type ID '[' ']'                                               #paramArray
                 ;
 
 block           : cmd?                                                          #blockSingle
@@ -51,8 +57,8 @@ cmd             : atrib EOL                                                     
 swtstm          : SWITCH '(' expr ')' '{' cases* dfault?'}'  
                 ;
 
-cases           : CASE NUM ':' cmd* BREAK?                                      #caseSimple
-                | CASE NUM ':' '{' cmd* BREAK? '}'                              #caseBlock
+cases           : CASE (NUM|CHARC) ':' cmd* BREAK?                              #caseSimple
+                | CASE (NUM|CHARC) ':' '{' cmd* BREAK? '}'                      #caseBlock
                 ;
 
 dfault          : DEFAULT ':' cmd* BREAK?                                       #defaultSimple

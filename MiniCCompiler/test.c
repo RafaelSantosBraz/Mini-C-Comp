@@ -1,8 +1,12 @@
 #include <stdio.h>
 
+int teste(int *x, int b[], char s){    
+    return a + b;
+}
 
 int main(){  
-    char a[10] = "abs";
-    teste(a[teste("a")], foo());
+    int *a = 10;
+    int b = 20;
+    int c = teste(a, b);
     return 0;
 }
