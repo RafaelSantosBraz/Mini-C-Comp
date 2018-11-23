@@ -80,6 +80,7 @@ term            : term '*' fact                                                 
 
 fact            : NUM                                                           #factNum
                 | STR                                                           #factStr
+                | CHARC                                                         #factChar
                 | funccall                                                      #factCall
                 ;
 
@@ -103,7 +104,8 @@ decl            : type ID                                                       
                 | type ID '[' expr ']'                                          #declArray
                 | type ID '=' expr                                              #declValueSimple
                 | type '*' ID '=' expr                                          #declValuePointer
-                | type ID '[' expr? ']' '=' '{' funcargs? '}'                   #declValueArray
+                | type ID '[' expr? ']' '=' '{' funcargs? '}'                   #declValueArrayList
+                | type ID '[' expr? ']' '=' STR                                 #declValueArrayString
                 ;
 
 ifstm           : IF cond block                                                 #ifStm
@@ -168,6 +170,7 @@ INT     : 'int';
 DOUBLE  : 'double';
 CHAR    : 'char';
 VOID    : 'void';
+CHARC   : ['] (~[']) ['];
 NUM     : '-'?[0-9]+('.'[0-9]+)?;
 ID      : [_a-zA-Z][_a-zA-Z0-9]*;
 LIB     : (~(["\\\r\n <>(){}#;&*,]|'['|']'))+;
