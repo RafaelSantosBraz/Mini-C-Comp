@@ -83,9 +83,15 @@ fact            : NUM                                                           
                 | funccall                                                      #factCall
                 ;
 
-funccall        : ID '(' funcargs? ')'
-                | ID
-                | '(' expr ')'
+funccall        : ID '(' funcargs? ')'                                          #funccallReal
+                | downfact                                                      #funcIsolate
+                ;
+
+downfact        : ID                                                            #downfactId
+                | '&' ID                                                        #downfactAdress
+                | '*' ID                                                        #downfactContent
+                | ID '[' expr ']'                                               #downfactArray
+                | '(' expr ')'                                                  #downfactExpr
                 ;
 
 funcargs        : expr ',' funcargs                                             #funcargsCompose
@@ -93,7 +99,11 @@ funcargs        : expr ',' funcargs                                             
                 ;
 
 decl            : type ID                                                       #declSimple
-                | type ID '=' expr                                              #declValue
+                | type '*' ID                                                   #declPointer
+                | type ID '[' expr ']'                                          #declArray
+                | type ID '=' expr                                              #declValueSimple
+                | type '*' ID '=' expr                                          #declValuePointer
+                | type ID '[' expr? ']' '=' '{' funcargs? '}'                   #declValueArray
                 ;
 
 ifstm           : IF cond block                                                 #ifStm
@@ -132,6 +142,8 @@ OPP     : '(';
 ClP     : ')';
 OPB     : '{';
 CLB     : '}';
+OPBR    : '[';
+CLBR    : ']';
 EOL     : ';';
 COMMA   : ',';
 HASHTAG : '#';
@@ -158,7 +170,7 @@ CHAR    : 'char';
 VOID    : 'void';
 NUM     : '-'?[0-9]+('.'[0-9]+)?;
 ID      : [_a-zA-Z][_a-zA-Z0-9]*;
-LIB     : (~["\\\r\n,>< (){}#;&])+;
+LIB     : (~(["\\\r\n <>(){}#;&*,]|'['|']'))+;
 STR     : '"'(~["\\\r\n])*'"';
 WS      : [ \t\r\n]+ -> skip;
 COM     : '//'(~[\r\n])*'\r'?'\n' -> skip;

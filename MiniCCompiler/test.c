@@ -1,19 +1,10 @@
 #include <stdio.h>
 
-#define X "as"
-
-int teste(int b){
-    if (X == "as"){
-        int aux;
-        scanf("%d", &aux);
-        return aux;
-    } else if (4 != 10){
-       return 10;
-    }
-}
-
 int main(){  
-    int a = 4;
-    int x = teste(teste(a));
+    int a = teste() + c[9];
+    int *b;
+    int c[12];
+    int *d = b;
+    int e[] = {2,2};
     return 0;
 }
