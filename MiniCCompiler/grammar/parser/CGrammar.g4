@@ -4,7 +4,10 @@ grammar CGrammar;
     package parser;
 }
 
-prog            : include* define* function+
+prog            : include* define* global* function+
+                ;
+
+global          : decl EOL
                 ;
 
 include         : INC '<' LIB '>'                                               #includesInternal
@@ -76,13 +79,13 @@ term            : term '*' fact                                                 
                 ;
 
 fact            : NUM                                                           #factNum
-                | ID                                                            #factVar
                 | STR                                                           #factStr
-                | funccall                                                      #factFunc
-                | '(' expr ')'                                                  #factExpr
+                | funccall                                                      #factCall
                 ;
 
-funccall        : ID '(' funcargs ')'
+funccall        : ID '(' funcargs? ')'
+                | ID
+                | '(' expr ')'
                 ;
 
 funcargs        : expr ',' funcargs                                             #funcargsCompose
