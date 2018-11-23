@@ -43,7 +43,19 @@ cmd             : atrib EOL                                                     
                 | scan EOL                                                      #cmdRead
                 | decl EOL                                                      #cmdDecl
                 | retrn EOL                                                     #cmdReturn
-                | ifstm                                                         #cmdIf     
+                | ifstm                                                         #cmdIf
+                | swtstm                                                        #cmdswitch
+                ;
+
+swtstm          : SWITCH '(' expr ')' '{' cases* dfault?'}'  
+                ;
+
+cases           : CASE NUM ':' cmd* BREAK?                                      #caseSimple
+                | CASE NUM ':' '{' cmd* BREAK? '}'                              #caseBlock
+                ;
+
+dfault          : DEFAULT ':' cmd* BREAK?                                       #defaultSimple
+                | DEFAULT ':' '{' cmd* BREAK? '}'                               #defaultBlock
                 ;
 
 retrn           : RETURN expr 
@@ -162,6 +174,10 @@ NOT     : '!';
 INC     : '#include';
 IF      : 'if';
 ELSE    : 'else';
+SWITCH  : 'switch';
+CASE    : 'case';
+BREAK   : 'break';
+DEFAULT : 'default';
 PRINTF  : 'printf';
 SCANF   : 'scanf';
 RETURN  : 'return';
