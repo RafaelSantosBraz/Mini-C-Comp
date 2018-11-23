@@ -19,8 +19,8 @@ define          : DEF ID num                                                    
                 | DEF ID CHARC                                                  #defineChar
                 ;
 
-num             : NUMINT
-                | NDOUBLE
+num             : NUMINT                                                        #numInt
+                | NDOUBLE                                                       #numDouble
                 ;
 
 function        : returntype ID '(' param* ')' '{' cmd* '}'
@@ -56,7 +56,22 @@ cmd             : atrib EOL                                                     
                 | funccallact EOL                                               #cmdFunccall
                 | ifstm                                                         #cmdIf
                 | swtstm                                                        #cmdswitch
+                | whilee                                                        #cmdWhile
+                | dowhile EOL                                                   #cmdDoWhile
+                | forr                                                          #cmdFor
                 ;
+
+forr            : FOR '(' forinit ';' cond ';' atrib ')' block
+                ;
+
+forinit         : atrib                                                         #forAtrib
+                | decl                                                          #forDecl
+                ;
+
+dowhile         : DO block WHILE cond
+                ;
+
+whilee          : WHILE cond block;
 
 swtstm          : SWITCH '(' expr ')' '{' cases* dfault?'}'  
                 ;
@@ -76,7 +91,9 @@ dfault          : DEFAULT ':' cmd* BREAK?                                       
 retrn           : RETURN expr 
                 ;
 
-atrib           : ID '=' expr           
+atrib           : ID '=' expr                                                   #atribSimple
+                | ID '+' '+'                                                    #atribPlusPlus
+                | ID '-' '-'                                                    #atribMinusMinus
                 ; 
 
 print           : PRINTF '(' STR ')'                                            #printSimple
@@ -192,6 +209,9 @@ NOT     : '!';
 INC     : '#include';
 IF      : 'if';
 ELSE    : 'else';
+WHILE   : 'while';
+DO      : 'do';
+FOR     : 'for';
 SWITCH  : 'switch';
 CASE    : 'case';
 BREAK   : 'break';
@@ -208,7 +228,7 @@ CHARC   : ['] (~[']) ['];
 NUMINT  : '-'?[0-9]+;
 NDOUBLE : NUMINT'.'[0-9]+;
 ID      : [_a-zA-Z][_a-zA-Z0-9]*;
-LIB     : (~(["\\\r\n <>(){}#;&*,]|'['|']'))+;
+LIB     : (~(["\\\r\n <>(){}#;&*,+]|'['|']'))+;
 STR     : '"'(~["\\\r\n])*'"';
 WS      : [ \t\r\n]+ -> skip;
 COM     : '//'(~[\r\n])*'\r'?'\n' -> skip;

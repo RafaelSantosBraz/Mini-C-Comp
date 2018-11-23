@@ -1,12 +1,8 @@
 #include <stdio.h>
 
-int teste(int *x, int b[], char s){    
-    return a + b;
-}
-
-int main(){  
-    int *a = 10;
-    int b = 20;
-    int c = teste(a, b);
-    return 0;
+int main()
+{
+   for (int c = 0; c < 10; c++){
+       printf("oi");
+   }
 }
