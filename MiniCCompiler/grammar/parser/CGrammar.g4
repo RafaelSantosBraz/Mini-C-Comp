@@ -43,6 +43,7 @@ cmd             : atrib EOL                                                     
                 | scan EOL                                                      #cmdRead
                 | decl EOL                                                      #cmdDecl
                 | retrn EOL                                                     #cmdReturn
+                | funccallact EOL                                               #cmdFunccall
                 | ifstm                                                         #cmdIf
                 | swtstm                                                        #cmdswitch
                 ;
@@ -94,6 +95,9 @@ fact            : NUM                                                           
                 | STR                                                           #factStr
                 | CHARC                                                         #factChar
                 | funccall                                                      #factCall
+                ;
+
+funccallact     : ID '(' funcargs? ')'
                 ;
 
 funccall        : ID '(' funcargs? ')'                                          #funccallReal
