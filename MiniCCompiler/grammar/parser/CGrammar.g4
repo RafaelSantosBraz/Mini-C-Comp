@@ -68,10 +68,10 @@ forinit         : atrib                                                         
                 | decl                                                          #forDecl
                 ;
 
-dowhile         : DO block WHILE cond
+dowhile         : DO block WHILE '(' cond ')'
                 ;
 
-whilee          : WHILE cond block;
+whilee          : WHILE '(' cond ')' block;
 
 swtstm          : SWITCH '(' expr ')' '{' cases* dfault?'}'  
                 ;
@@ -155,22 +155,21 @@ decl            : type ID                                                       
                 | type ID '[' expr? ']' '=' STR                                 #declValueArrayString
                 ;
 
-ifstm           : IF cond block                                                 #ifStm
-                | IF cond b1=block ELSE b2=block                                #ifStmElse
+ifstm           : IF '(' cond ')' block                                         #ifStm
+                | IF '(' cond ')' b1=block ELSE b2=block                        #ifStmElse
                 ;
 
-cond            : '(' cond OR cdand ')'                                         #condOR
+cond            : cond OR cdand                                                 #condOr
                 | cdand                                                         #condAnd        
                 ;
 
-cdand           : '(' cdand AND cndts ')'                                       #cdandAnd
+cdand           : cdand AND cndts                                               #cdandAnd
                 | cndts                                                         #cdandCndts
                 ;
 
-cndts           : '(' expr ')'                                                  #cndtsExpr
-                | '(' e1=expr relop e2=expr ')'                                 #cndtsRelop
-                | '!' ('(' expr ')')                                            #cndtsNotExpr
-                | '!' ('(' e1=expr relop e2=expr ')')                           #cndtsNotRelop
+cndts           : expr                                                          #cndtsExpr
+                | e1=expr relop e2=expr                                         #cndtsRelop                
+                | '!' cndts                                                     #cndtsNotExprWithout                
                 | '(' cond ')'                                                  #cndtsCond
                 ;
 

@@ -2,7 +2,7 @@
 
 int main()
 {
-   for (int c = 0; c < 10; c++){
-       printf("oi");
-   }
+   if ((x == 10) || (c < 2.0)) && (casa != "minha")){
+    a++;
+}
 }
