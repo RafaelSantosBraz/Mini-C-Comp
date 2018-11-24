@@ -61,5 +61,4 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         return ctx.NDOUBLE().getSymbol();
     }
 
-    
 }

@@ -29,7 +29,7 @@ public class Util {
         switch (numError) {
             // símbolo já declarado
             case 0:
-                System.err.println("Símbolo "
+                System.err.println("Erro (0): Símbolo "
                         + currentToken.getText()
                         + " em ["
                         + currentToken.getLine()
