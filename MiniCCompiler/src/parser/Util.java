@@ -5,6 +5,7 @@
  */
 package parser;
 
+import org.antlr.v4.runtime.Token;
 
 /**
  * FACADE?
@@ -23,6 +24,24 @@ public class Util {
         return instance;
     }
     //</editor-fold>
-    
-   
+
+    public void error(int numError, Token currentToken, Token aditionalToken) {
+        switch (numError) {
+            // símbolo já declarado
+            case 0:
+                System.out.println("Símbolo "
+                        + currentToken.getText()
+                        + " em ["
+                        + currentToken.getLine()
+                        + ":"
+                        + currentToken.getCharPositionInLine() 
+                        + "] declarado anteriormente em ["
+                        + aditionalToken.getLine()
+                        + ":"
+                        + aditionalToken.getCharPositionInLine() 
+                        + "]."
+                );                        
+                break;
+        }
+    }
 }
