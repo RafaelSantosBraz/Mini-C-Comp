@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import parser.*;
+import semantic.SemanticVisitor;
 
 /**
  *
@@ -47,8 +48,8 @@ public class Run {
         exibir(prog);
         showParseTreeFrame(prog, parser);
 //        System.out.println(SymbolTable.getInstance().dumpTable());
-//        MyProgVisitor pv = new MyProgVisitor();
-//        pv.visit(prog);
+        SemanticVisitor pv = new SemanticVisitor();
+        pv.visit(prog);
     }
     
     public static void exibir(ParseTree tree){

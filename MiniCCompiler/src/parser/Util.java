@@ -29,18 +29,18 @@ public class Util {
         switch (numError) {
             // símbolo já declarado
             case 0:
-                System.out.println("Símbolo "
+                System.err.println("Símbolo "
                         + currentToken.getText()
                         + " em ["
                         + currentToken.getLine()
                         + ":"
-                        + currentToken.getCharPositionInLine() 
+                        + currentToken.getCharPositionInLine()
                         + "] declarado anteriormente em ["
                         + aditionalToken.getLine()
                         + ":"
-                        + aditionalToken.getCharPositionInLine() 
+                        + aditionalToken.getCharPositionInLine()
                         + "]."
-                );                        
+                );
                 break;
         }
     }
