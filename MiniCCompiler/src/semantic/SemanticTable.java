@@ -45,4 +45,8 @@ public class SemanticTable {
         tables.put(functionName, new SymbolTable());
     }
     
+    public int countTables(){
+        return tables.size();
+    }
+    
 }

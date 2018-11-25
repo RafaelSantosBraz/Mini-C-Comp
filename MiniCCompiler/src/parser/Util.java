@@ -23,7 +23,23 @@ public class Util {
         }
         return instance;
     }
-    //</editor-fold>
+    //</editor-fold>    
+
+    public boolean compatibilityTypeTest(Integer t1, Integer t2) {
+        switch (t1) {
+            case CGrammarLexer.NUMINT:
+            case CGrammarLexer.NDOUBLE:
+            case CGrammarLexer.CHARC:
+                if (t2 == CGrammarLexer.STR) {
+                    return false;
+                } else {
+                    return true;
+                }
+            default:
+                return false;
+        }
+
+    }
 
     public void error(int numError, Token currentToken, Token aditionalToken) {
         switch (numError) {
@@ -40,6 +56,18 @@ public class Util {
                         + ":"
                         + aditionalToken.getCharPositionInLine()
                         + "]."
+                );
+                break;
+            case 1:
+                System.err.println("Erro (1): a expressão entre ["
+                        + currentToken.getLine()
+                        + ":"
+                        + currentToken.getCharPositionInLine()
+                        + "] e ["
+                        + aditionalToken.getLine()
+                        + ":"
+                        + aditionalToken.getCharPositionInLine()
+                        + "] deve ser do tipo INTEIRO."
                 );
                 break;
         }

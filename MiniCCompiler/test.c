@@ -1,9 +1,9 @@
 #include <stdio.h>
 
-#define x 10
-#define x 20
+#define a 20
 
 int main()
 {
-   return 0;
+
+            return 0;
 }
