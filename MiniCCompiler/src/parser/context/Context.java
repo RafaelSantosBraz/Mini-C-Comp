@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package parser;
+package parser.context;
 
 import org.antlr.v4.runtime.Token;
 
@@ -13,33 +13,34 @@ import org.antlr.v4.runtime.Token;
  */
 public class Context {
 
-    private final int type;
-    private final boolean pointer;
-    private final boolean constant;
+    private final Integer type;
+    private final Boolean constant;
     private final Token token;
     private Object value;
 
-    public Context(int type, boolean pointer, boolean constant, Token token) {
+    public Context(Integer type, Boolean constant, Token token) {
         this.type = type;
         this.constant = constant;
-        this.pointer = pointer;
         this.token = token;
         value = null;
     }
 
-    public boolean isPointer() {
-        return pointer;
+    public Context(Integer type, Boolean constant, Token token, Object value) {
+        this.type = type;
+        this.constant = constant;
+        this.token = token;
+        this.value = value;        
     }
 
     public Token getToken() {
         return token;
     }
 
-    public int getType() {
+    public Integer getType() {
         return type;
     }
 
-    public boolean isConstant() {
+    public Boolean getConstant() {
         return constant;
     }
 
