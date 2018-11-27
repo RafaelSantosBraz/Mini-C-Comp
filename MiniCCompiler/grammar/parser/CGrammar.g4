@@ -152,7 +152,7 @@ decl            : type ID                                                       
                 | type ID '=' expr                                              #declValueSimple
                 | type '*' ID '=' expr                                          #declValuePointer
                 | type ID '[' expr? ']' '=' '{' funcargs? '}'                   #declValueArrayList
-                | type ID '[' expr? ']' '=' STR                                 #declValueArrayString
+                | CHAR ID '[' expr? ']' '=' STR                                 #declValueArrayString
                 ;
 
 ifstm           : IF '(' cond ')' block                                         #ifStm

@@ -2,8 +2,9 @@
 
 #define a 20
 
-int main()
-{
+int x[] = {1, 2};
 
-            return 0;
+int main()
+{        
+        return 0;
 }

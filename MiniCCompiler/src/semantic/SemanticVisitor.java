@@ -15,6 +15,7 @@ import parser.*;
  */
 public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
 
+    //<editor-fold defaultstate="collapsed" desc="define">
     @Override
     public Object visitDefineNUM(CGrammarParser.DefineNUMContext ctx) {
         SymbolTable g = SemanticTable.getInstance().getGlobalSymbolTable();
@@ -51,7 +52,9 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         }
         return null;
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="num">
     @Override
     public Object visitNumInt(CGrammarParser.NumIntContext ctx) {
         return ctx.NUMINT().getSymbol();
@@ -61,6 +64,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     public Object visitNumDouble(CGrammarParser.NumDoubleContext ctx) {
         return ctx.NDOUBLE().getSymbol();
     }
+    //</editor-fold>
 
     @Override
     public Object visitGlobal(CGrammarParser.GlobalContext ctx) {
@@ -74,6 +78,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         return null;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="decl">
     @Override
     public Object visitDeclPointer(CGrammarParser.DeclPointerContext ctx) {
         Integer type = (Integer) visit(ctx.type());
@@ -83,9 +88,12 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     @Override
     public Object visitDeclArray(CGrammarParser.DeclArrayContext ctx) {
         Integer type = (Integer) visit(ctx.type());
-        Integer exprResult = (Integer) visit(ctx.expr());
-        if (exprResult != CGrammarLexer.NUMINT) {
-            Util.getInstance().error(1, ctx.getToken(CGrammarLexer.OPBR, 0).getSymbol(), null);
+        ArrayList<Object> exprResult = (ArrayList<Object>) visit(ctx.expr());
+        if ((Integer) exprResult.get(0) != CGrammarLexer.NUMINT) {
+            Util.getInstance().error(1,
+                    ctx.getToken(CGrammarLexer.OPBR, 0).getSymbol(),
+                    ctx.getToken(CGrammarLexer.CLBR, 0).getSymbol()
+            );
         }
         return new Context(type, true, false, ctx.ID().getSymbol());
     }
@@ -93,20 +101,70 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     @Override
     public Object visitDeclValueSimple(CGrammarParser.DeclValueSimpleContext ctx) {
         Integer type = (Integer) visit(ctx.type());
-        Integer exprResult = (Integer) visit(ctx.expr());
-        if (!Util.getInstance().compatibilityTypeTest(type, exprResult)){
-            //Util.getInstance().error(2, currentToken, aditionalToken);
+        ArrayList<Object> exprResult = (ArrayList<Object>) visit(ctx.expr());
+        if (!Util.getInstance().compatibilityTypeTest(type, (Integer) exprResult.get(0))) {
+            Util.getInstance().error(2, type, exprResult);
         }
-        return null;
+        return new Context(type, false, false, ctx.ID().getSymbol());
     }
 
     @Override
-
     public Object visitDeclSimple(CGrammarParser.DeclSimpleContext ctx) {
         Integer type = (Integer) visit(ctx.type());
         return new Context(type, false, false, ctx.ID().getSymbol());
     }
 
+    @Override
+    public Object visitDeclValuePointer(CGrammarParser.DeclValuePointerContext ctx) {
+        Integer type = (Integer) visit(ctx.type());
+        ArrayList<Object> exprResult = (ArrayList<Object>) visit(ctx.expr());
+        if (!Util.getInstance().compatibilityTypeTest(type, (Integer) exprResult.get(0))) {
+            Util.getInstance().error(2, type, exprResult);
+        }
+        return new Context(type, true, false, ctx.ID().getSymbol());
+    }
+
+    @Override
+    public Object visitDeclValueArrayList(CGrammarParser.DeclValueArrayListContext ctx) {
+        Integer type = (Integer) visit(ctx.type());
+        ArrayList<Object> exprResult;
+        ArrayList<Integer> argsResult;
+        if (ctx.expr() != null) {
+            exprResult = (ArrayList<Object>) visit(ctx.expr());
+            if ((Integer) exprResult.get(0) != CGrammarLexer.NUMINT) {
+                Util.getInstance().error(1,
+                        ctx.getToken(CGrammarLexer.OPBR, 0).getSymbol(),
+                        ctx.getToken(CGrammarLexer.CLBR, 0).getSymbol()
+                );
+            }
+            if (!(Boolean) exprResult.get(1)) {
+                Util.getInstance().error(3,
+                        ctx.getToken(CGrammarLexer.OPBR, 0).getSymbol(),
+                        ctx.getToken(CGrammarLexer.CLBR, 0).getSymbol()
+                );
+            }
+            if (!(Boolean) exprResult.get(2)) {
+                Util.getInstance().error(4,
+                        ctx.getToken(CGrammarLexer.OPBR, 0).getSymbol(),
+                        ctx.getToken(CGrammarLexer.CLBR, 0).getSymbol()
+                );
+            }
+        }
+        if (ctx.funcargs() != null) {
+            argsResult = (ArrayList<Integer>) visit(ctx.funcargs());
+            if (!Util.getInstance().listcompatibilityTypeTest(type, argsResult)){
+                Util.getInstance().error(5,
+                        ctx.getToken(CGrammarLexer.OPB, 0).getSymbol(),
+                        ctx.getToken(CGrammarLexer.CLB, 0).getSymbol()
+                );
+            }           
+        }
+        return new Context(type, true, false, ctx.ID().getSymbol());
+    }
+
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="type">
     @Override
     public Object visitTypeInt(CGrammarParser.TypeIntContext ctx) {
         return ctx.INT().getSymbol().getType();
@@ -114,12 +172,13 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
 
     @Override
     public Object visitTypeChar(CGrammarParser.TypeCharContext ctx) {
-        return ctx.CHAR().getSymbol();
+        return ctx.CHAR().getSymbol().getType();
     }
 
     @Override
     public Object visitTypeDouble(CGrammarParser.TypeDoubleContext ctx) {
-        return ctx.DOUBLE().getSymbol();
+        return ctx.DOUBLE().getSymbol().getType();
     }
+    //</editor-fold>
 
 }
