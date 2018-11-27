@@ -151,12 +151,8 @@ decl            : type ID                                                       
                 | type ID '[' expr ']'                                          #declArray
                 | type ID '=' expr                                              #declValueSimple
                 | type '*' ID '=' expr                                          #declValuePointer
-                | type ID '[' expr? ']' '=' '{' listargs? '}'                   #declValueArrayList
+                | type ID '[' expr? ']' '=' '{' funcargs? '}'                   #declValueArrayList
                 | CHAR ID '[' expr? ']' '=' STR                                 #declValueArrayString
-                ;
-
-listargs        : expr ',' listargs                                             #listargsCompose
-                | expr                                                          #listargsSingle
                 ;
 
 ifstm           : IF '(' cond ')' block                                         #ifStm
