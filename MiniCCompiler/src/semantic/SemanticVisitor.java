@@ -155,6 +155,84 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         return args;
     }
     //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="expr">
+    @Override
+    public Object visitExprPlus(CGrammarParser.ExprPlusContext ctx) {
+        Context exprContext = (Context) visit(ctx.expr());
+        Context termContext = (Context) visit(ctx.term());
+        Boolean constant = (exprContext.getConstant() && termContext.getConstant());
+        return new PrimitiveContext(Util.getInstance().toUpperType(exprContext, termContext),
+                constant,
+                ctx.getToken(CGrammarLexer.SUM, 0).getSymbol()
+        );
+    }
+
+    @Override
+    public Object visitExprMin(CGrammarParser.ExprMinContext ctx) {
+        Context exprContext = (Context) visit(ctx.expr());
+        Context termContext = (Context) visit(ctx.term());
+        Boolean constant = (exprContext.getConstant() && termContext.getConstant());
+        return new PrimitiveContext(Util.getInstance().toUpperType(exprContext, termContext),
+                constant,
+                ctx.getToken(CGrammarLexer.MIN, 0).getSymbol()
+        );
+    }
+
+    @Override
+    public Object visitExprHided(CGrammarParser.ExprHidedContext ctx) {
+        Context exprContext = (Context) visit(ctx.expr());
+        Context termContext = (Context) visit(ctx.term());
+        Boolean constant = (exprContext.getConstant() && termContext.getConstant());
+        return new PrimitiveContext(Util.getInstance().toUpperType(exprContext, termContext),
+                constant,
+                exprContext.getToken()
+        );
+    }
+
+    @Override
+    public Object visitExprTerm(CGrammarParser.ExprTermContext ctx) {
+        Context termContext = (Context) visit(ctx.term());
+        return new PrimitiveContext(termContext.getType(),
+                termContext.getConstant(),
+                termContext.getToken()
+        );
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="term">
+    @Override
+    public Object visitTermMult(CGrammarParser.TermMultContext ctx) {
+        Context termContext = (Context) visit(ctx.term());
+        Context factContext = (Context) visit(ctx.fact());
+        Boolean constant = (termContext.getConstant() && factContext.getConstant());
+        return new PrimitiveContext(Util.getInstance().toUpperType(termContext, factContext),
+                constant,
+                ctx.getToken(CGrammarLexer.MULT, 0).getSymbol()
+        );
+    }
+
+    @Override
+    public Object visitTermDiv(CGrammarParser.TermDivContext ctx) {
+        Context termContext = (Context) visit(ctx.term());
+        Context factContext = (Context) visit(ctx.fact());
+        Boolean constant = (termContext.getConstant() && factContext.getConstant());
+        return new PrimitiveContext(Util.getInstance().toUpperType(termContext, factContext),
+                constant,
+                ctx.getToken(CGrammarLexer.DIV, 0).getSymbol()
+        );
+    }
+
+    @Override
+    public Object visitTermFact(CGrammarParser.TermFactContext ctx) {
+        Context factContext = (Context) visit(ctx.fact());
+        Boolean constant = factContext.getConstant();
+        return new PrimitiveContext(factContext.getType(),
+                constant,
+                factContext.getToken()
+        );
+    }
+    //</editor-fold>
     
     
 }

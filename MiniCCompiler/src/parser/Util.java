@@ -33,6 +33,49 @@ public class Util {
     }
     //</editor-fold>    
 
+    public Integer toUpperType(Context type1, Context type2) {
+        if (MathOpCompatibilityCheck(type1, type2)) {
+            switch (type1.getType()) {
+                case Type.INT: {
+                    if (type2.getType() == Type.INT || type2.getType() == Type.CHAR) {
+                        return Type.INT;
+                    }
+                    if (type2.getType() == Type.DOUBLE) {
+                        return Type.DOUBLE;
+                    }
+                    break;
+                }
+                case Type.CHAR: {
+                    if (type2.getType() == Type.INT || type2.getType() == Type.CHAR) {
+                        return Type.CHAR;
+                    }
+                    if (type2.getType() == Type.DOUBLE) {
+                        return Type.DOUBLE;
+                    }
+                    break;
+                }
+                case Type.DOUBLE: {
+                    if (type2.getType() == Type.INT || type2.getType() == Type.CHAR || type2.getType() == Type.DOUBLE) {
+                        return Type.DOUBLE;
+                    }
+                    break;
+                }
+            }
+        }
+        return Type.POINTER;
+    }
+
+    public Boolean MathOpCompatibilityCheck(Context type1, Context type2){
+        if (Type.isPrimitive(type1.getType()) && Type.isPrimitive(type2.getType())){
+            return true;
+        }
+        ArrayList<Object> args = new ArrayList<>();
+        args.add(type1);
+        args.add(type2);
+        error(ErrorType.INCOMPATIBLE_TYPES, args);
+        return false;
+    }
+    
     public Boolean declAtribCompatibilityCheck(Context mainType, ArrayList<Context> types) {
         for (Context t : types) {
             if (!declAtribCompatibilityCheck(mainType, t)) {
