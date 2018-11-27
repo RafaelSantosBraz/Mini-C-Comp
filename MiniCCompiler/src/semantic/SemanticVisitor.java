@@ -49,7 +49,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         return new PrimitiveContext(Type.DOUBLE, true, ctx.NDOUBLE().getSymbol());
     }
     //</editor-fold>
-    
+
     @Override
     public Object visitGlobal(CGrammarParser.GlobalContext ctx) {
         Context c = (Context) visit(ctx.decl());
@@ -122,5 +122,39 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="type">
+    @Override
+    public Object visitTypeInt(CGrammarParser.TypeIntContext ctx) {
+        return new PrimitiveContext(Type.INT, true, ctx.INT().getSymbol());
+    }
+
+    @Override
+    public Object visitTypeChar(CGrammarParser.TypeCharContext ctx) {
+        return new PrimitiveContext(Type.CHAR, true, ctx.CHAR().getSymbol());
+    }
+
+    @Override
+    public Object visitTypeDouble(CGrammarParser.TypeDoubleContext ctx) {
+        return new PrimitiveContext(Type.DOUBLE, true, ctx.DOUBLE().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="funcargs">
+    @Override
+    public Object visitFuncargsCompose(CGrammarParser.FuncargsComposeContext ctx) {
+        ArrayList<Context> args = new ArrayList<>();
+        args.add((Context) visit(ctx.expr()));
+        args.addAll((ArrayList<Context>) visit(ctx.funcargs()));
+        return args;
+    }
+
+    @Override
+    public Object visitFuncargsSingle(CGrammarParser.FuncargsSingleContext ctx) {
+        ArrayList<Context> args = new ArrayList<>();
+        args.add((Context) visit(ctx.expr()));
+        return args;
+    }
+    //</editor-fold>
+    
     
 }
