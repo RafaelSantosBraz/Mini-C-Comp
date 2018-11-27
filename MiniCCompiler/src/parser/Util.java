@@ -26,15 +26,38 @@ public class Util {
     }
     //</editor-fold>    
 
-    public boolean listcompatibilityTypeTest(Integer type, ArrayList<Integer> list){
-        for (Integer t: list){
-            if (!compatibilityTypeTest(type, t)){
+    public boolean funcParamsCheck(String id, ArrayList<Context> args){
+        return true;
+    }
+    
+    public Integer upperTypeResult(Integer t1, Integer t2) {
+        switch (t1) {
+            case CGrammarLexer.NUMINT:
+            case CGrammarLexer.CHARC:
+                if (t2 == CGrammarLexer.NUMINT || t2 == CGrammarLexer.CHARC) {
+                    return CGrammarLexer.NUMINT;
+                } else if (t2 == CGrammarLexer.NDOUBLE) {
+                    return CGrammarLexer.NDOUBLE;
+                }
+                break;
+            case CGrammarLexer.NDOUBLE:
+                if (t2 == CGrammarLexer.NUMINT || t2 == CGrammarLexer.CHARC || t2 == CGrammarLexer.NDOUBLE) {
+                    return CGrammarLexer.NDOUBLE;
+                }
+        }
+        return null;
+    }
+
+    public boolean listcompatibilityTypeTest(Integer type, ArrayList<Integer> list) {
+        for (Integer t : list) {
+            if (!compatibilityTypeTest(type, t)) {
+                error(6, type, t);
                 return false;
             }
         }
         return true;
     }
-    
+
     public boolean compatibilityTypeTest(Integer t1, Integer t2) {
         switch (t1) {
             case CGrammarLexer.NUMINT:
@@ -46,7 +69,6 @@ public class Util {
             default:
                 return false;
         }
-
     }
 
     public void error(int numError, Object c, Object a) {
@@ -56,8 +78,8 @@ public class Util {
         // índice com valores não constantes    3
         // índice d valores tipos incompatíveis 4
         // argumentos de tipos imcompatíveis    5
-        
-        
+        // valores de tipos incompatíveis       6
+
         switch (numError) {
             // símbolo já declarado
             case 0: {
@@ -147,6 +169,17 @@ public class Util {
                         + ":"
                         + aditionalToken.getCharPositionInLine()
                         + "] devem ser compatíveis com o valor declarado."
+                );
+            }
+            // valore de tipos imcompatíveis
+            case 6: {
+                String type = getUpperTypeName((Integer) c);
+                String typeExpr = getUpperTypeName((Integer) a);
+                System.err.println("Erro (6): um valor do tipo "
+                        + type
+                        + " não é compatível com o tipo "
+                        + typeExpr
+                        + "."
                 );
             }
         }

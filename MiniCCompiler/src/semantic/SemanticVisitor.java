@@ -150,20 +150,46 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
                 );
             }
         }
-        if (ctx.funcargs() != null) {
-            argsResult = (ArrayList<Integer>) visit(ctx.funcargs());
-            if (!Util.getInstance().listcompatibilityTypeTest(type, argsResult)){
+        if (ctx.listargs() != null) {
+            argsResult = (ArrayList<Integer>) visit(ctx.listargs());
+            if (!Util.getInstance().listcompatibilityTypeTest(type, argsResult)) {
                 Util.getInstance().error(5,
                         ctx.getToken(CGrammarLexer.OPB, 0).getSymbol(),
                         ctx.getToken(CGrammarLexer.CLB, 0).getSymbol()
                 );
-            }           
+            }
         }
         return new Context(type, true, false, ctx.ID().getSymbol());
     }
 
+    @Override
+    public Object visitDeclValueArrayString(CGrammarParser.DeclValueArrayStringContext ctx) {
+        ArrayList<Object> exprResult;
+        if (ctx.expr() != null) {
+            exprResult = (ArrayList<Object>) visit(ctx.expr());
+            if ((Integer) exprResult.get(0) != CGrammarLexer.NUMINT) {
+                Util.getInstance().error(1,
+                        ctx.getToken(CGrammarLexer.OPBR, 0).getSymbol(),
+                        ctx.getToken(CGrammarLexer.CLBR, 0).getSymbol()
+                );
+            }
+            if (!(Boolean) exprResult.get(1)) {
+                Util.getInstance().error(3,
+                        ctx.getToken(CGrammarLexer.OPBR, 0).getSymbol(),
+                        ctx.getToken(CGrammarLexer.CLBR, 0).getSymbol()
+                );
+            }
+            if (!(Boolean) exprResult.get(2)) {
+                Util.getInstance().error(4,
+                        ctx.getToken(CGrammarLexer.OPBR, 0).getSymbol(),
+                        ctx.getToken(CGrammarLexer.CLBR, 0).getSymbol()
+                );
+            }
+        }
+        return new Context(ctx.CHAR().getSymbol().getType(), true, false, ctx.ID().getSymbol());
+    }
+
     //</editor-fold>
-    
     //<editor-fold defaultstate="collapsed" desc="type">
     @Override
     public Object visitTypeInt(CGrammarParser.TypeIntContext ctx) {
@@ -178,6 +204,185 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     @Override
     public Object visitTypeDouble(CGrammarParser.TypeDoubleContext ctx) {
         return ctx.DOUBLE().getSymbol().getType();
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="expr">   
+    @Override
+    public Object visitExprPlus(CGrammarParser.ExprPlusContext ctx) {
+        ArrayList<Object> exprResult = (ArrayList<Object>) visit(ctx.expr());
+        ArrayList<Object> termResult = (ArrayList<Object>) visit(ctx.term());
+        ArrayList<Object> result = new ArrayList<>();
+        if (!Util.getInstance().compatibilityTypeTest((Integer) exprResult.get(0), (Integer) termResult.get(0))) {
+            Util.getInstance().error(6, (Integer) exprResult.get(0), (Integer) termResult.get(0));
+        }
+        result.add(Util.getInstance().upperTypeResult((Integer) exprResult.get(0), (Integer) termResult.get(0)));
+        result.add(((Boolean) exprResult.get(1) == true && (Boolean) termResult.get(1) == true));
+        result.add(((Boolean) exprResult.get(2) == true && (Boolean) termResult.get(2) == true));
+        return result;
+    }
+
+    @Override
+    public Object visitExprMin(CGrammarParser.ExprMinContext ctx) {
+        ArrayList<Object> exprResult = (ArrayList<Object>) visit(ctx.expr());
+        ArrayList<Object> termResult = (ArrayList<Object>) visit(ctx.term());
+        ArrayList<Object> result = new ArrayList<>();
+        if (!Util.getInstance().compatibilityTypeTest((Integer) exprResult.get(0), (Integer) termResult.get(0))) {
+            Util.getInstance().error(6, (Integer) exprResult.get(0), (Integer) termResult.get(0));
+        }
+        result.add(Util.getInstance().upperTypeResult((Integer) exprResult.get(0), (Integer) termResult.get(0)));
+        result.add(((Boolean) exprResult.get(1) == true && (Boolean) termResult.get(1) == true));
+        result.add(((Boolean) exprResult.get(2) == true && (Boolean) termResult.get(2) == true));
+        return result;
+    }
+
+    @Override
+    public Object visitExprHided(CGrammarParser.ExprHidedContext ctx) {
+        ArrayList<Object> exprResult = (ArrayList<Object>) visit(ctx.expr());
+        ArrayList<Object> termResult = (ArrayList<Object>) visit(ctx.term());
+        ArrayList<Object> result = new ArrayList<>();
+        if (!Util.getInstance().compatibilityTypeTest((Integer) exprResult.get(0), (Integer) termResult.get(0))) {
+            Util.getInstance().error(6, (Integer) exprResult.get(0), (Integer) termResult.get(0));
+        }
+        result.add(Util.getInstance().upperTypeResult((Integer) exprResult.get(0), (Integer) termResult.get(0)));
+        result.add(((Boolean) exprResult.get(1) == true && (Boolean) termResult.get(1) == true));
+        result.add(((Boolean) exprResult.get(2) == true && (Boolean) termResult.get(2) == true));
+        return result;
+    }
+
+    @Override
+    public Object visitExprTerm(CGrammarParser.ExprTermContext ctx) {
+        ArrayList<Object> termResult = (ArrayList<Object>) visit(ctx.term());
+        ArrayList<Object> result = new ArrayList<>();
+        result.add((Integer) termResult.get(0));
+        result.add((Boolean) termResult.get(1));
+        result.add((Boolean) termResult.get(2));
+        return result;
+    }
+
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="term">   
+    @Override
+    public Object visitTermMult(CGrammarParser.TermMultContext ctx) {
+        ArrayList<Object> termResult = (ArrayList<Object>) visit(ctx.term());
+        ArrayList<Object> factResult = (ArrayList<Object>) visit(ctx.fact());
+        ArrayList<Object> result = new ArrayList<>();
+        if (!Util.getInstance().compatibilityTypeTest((Integer) termResult.get(0), (Integer) factResult.get(0))) {
+            Util.getInstance().error(6, (Integer) termResult.get(0), (Integer) factResult.get(0));
+        }
+        result.add(Util.getInstance().upperTypeResult((Integer) termResult.get(0), (Integer) factResult.get(0)));
+        result.add(((Boolean) termResult.get(1) == true && (Boolean) factResult.get(1) == true));
+        result.add(((Boolean) termResult.get(2) == true && (Boolean) factResult.get(2) == true));
+        return result;
+    }
+
+    @Override
+    public Object visitTermDiv(CGrammarParser.TermDivContext ctx) {
+        ArrayList<Object> termResult = (ArrayList<Object>) visit(ctx.term());
+        ArrayList<Object> factResult = (ArrayList<Object>) visit(ctx.fact());
+        ArrayList<Object> result = new ArrayList<>();
+        if (!Util.getInstance().compatibilityTypeTest((Integer) termResult.get(0), (Integer) factResult.get(0))) {
+            Util.getInstance().error(6, (Integer) termResult.get(0), (Integer) factResult.get(0));
+        }
+        result.add(Util.getInstance().upperTypeResult((Integer) termResult.get(0), (Integer) factResult.get(0)));
+        result.add(((Boolean) termResult.get(1) == true && (Boolean) factResult.get(1) == true));
+        result.add(((Boolean) termResult.get(2) == true && (Boolean) factResult.get(2) == true));
+        return result;
+    }
+
+    @Override
+    public Object visitTermFact(CGrammarParser.TermFactContext ctx) {
+        ArrayList<Object> factResult = (ArrayList<Object>) visit(ctx.fact());
+        ArrayList<Object> result = new ArrayList<>();
+        result.add((Integer) factResult.get(0));
+        result.add((Boolean) factResult.get(1));
+        result.add((Boolean) factResult.get(2));
+        return result;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="fact">   
+    @Override
+    public Object visitFactNum(CGrammarParser.FactNumContext ctx) {
+        Integer numType = (Integer) visit(ctx.num());
+        ArrayList<Object> result = new ArrayList<>();
+        result.add(numType);
+        result.add(true);
+        result.add((numType == CGrammarLexer.NUMINT));
+        return result;
+    }
+
+    @Override
+    public Object visitFactStr(CGrammarParser.FactStrContext ctx) {
+        ArrayList<Object> result = new ArrayList<>();
+        result.add(CGrammarLexer.STR);
+        result.add(true);
+        result.add(false);
+        return result;
+    }
+
+    @Override
+    public Object visitFactChar(CGrammarParser.FactCharContext ctx) {
+        ArrayList<Object> result = new ArrayList<>();
+        result.add(CGrammarLexer.CHARC);
+        result.add(true);
+        result.add(false);
+        return result;
+    }
+
+    @Override
+    public Object visitFactCall(CGrammarParser.FactCallContext ctx) {
+        ArrayList<Object> funcResult = (ArrayList<Object>) visit(ctx.funccall());
+        ArrayList<Object> result = new ArrayList<>();
+        result.add(funcResult.get(0));
+        result.add(false);
+        result.add(false);
+        return result;
+    }
+    //</editor-fold>
+
+    @Override
+    public Object visitFunccallReal(CGrammarParser.FunccallRealContext ctx) {
+        ArrayList<Object> result = new ArrayList<>();
+        ArrayList<Integer> argTypes = new ArrayList<>();
+        if (ctx.funcargs() != null) {
+            argTypes.addAll((ArrayList<Integer>) visit(ctx.funcargs()));
+        }
+
+        return result;
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="funcargs">   
+    @Override
+    public Object visitFuncargsCompose(CGrammarParser.FuncargsComposeContext ctx) {
+        ArrayList<Integer> result = new ArrayList<>();
+        result.add((Integer) visit(ctx.expr()));
+        result.addAll((ArrayList<Integer>) visit(ctx.funcargs()));
+        return result;
+    }
+
+    @Override
+    public Object visitFuncargsSingle(CGrammarParser.FuncargsSingleContext ctx) {
+        ArrayList<Integer> result = new ArrayList<>();
+        result.add((Integer) visit(ctx.expr()));
+        return result;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="listargs">   
+    @Override
+    public Object visitListargsCompose(CGrammarParser.ListargsComposeContext ctx) {
+        ArrayList<Integer> result = new ArrayList<>();
+        result.add((Integer) visit(ctx.expr()));
+        result.addAll((ArrayList<Integer>) visit(ctx.listargs()));
+        return result;
+    }
+
+    @Override
+    public Object visitListargsSingle(CGrammarParser.ListargsSingleContext ctx) {
+        ArrayList<Integer> result = new ArrayList<>();
+        result.add((Integer) visit(ctx.expr()));
+        return result;
     }
     //</editor-fold>
 
