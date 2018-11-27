@@ -33,6 +33,40 @@ public class Util {
     }
     //</editor-fold>    
 
+    public Boolean functionCallCheck(Context context, ArrayList<Context> params) {
+        FunctionContext func = isFunctionContext(context);
+        if (func != null) {
+            if (func.paramsCheck(params)) {
+                return true;
+            }
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(context);
+            error(ErrorType.FUNC_PARAMS_ARE_WRONG, args);
+            return null;
+        }
+        ArrayList<Object> args = new ArrayList<>();
+        args.add(context);
+        error(ErrorType.SYMB_IS_NOT_FUNCTION, args);
+        return null;
+    }
+
+    public FunctionContext isFunctionContext(Context func) {
+        if (func instanceof FunctionContext) {
+            return (FunctionContext) func;
+        }
+        return null;
+    }
+
+    public Context getContextFromTable(Context var) {
+        if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(var.getToken().getText())) {
+            return SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(var.getToken().getText());
+        }
+        ArrayList<Object> args = new ArrayList<>();
+        args.add(var);
+        error(ErrorType.SYMB_DOES_NOT_EXIT, args);
+        return null;
+    }
+
     public Integer toUpperType(Context type1, Context type2) {
         if (MathOpCompatibilityCheck(type1, type2)) {
             switch (type1.getType()) {
@@ -62,11 +96,12 @@ public class Util {
                 }
             }
         }
+        // apenas para continuar a verificação por mais erros
         return Type.POINTER;
     }
 
-    public Boolean MathOpCompatibilityCheck(Context type1, Context type2){
-        if (Type.isPrimitive(type1.getType()) && Type.isPrimitive(type2.getType())){
+    public Boolean MathOpCompatibilityCheck(Context type1, Context type2) {
+        if (Type.isPrimitive(type1.getType()) && Type.isPrimitive(type2.getType())) {
             return true;
         }
         ArrayList<Object> args = new ArrayList<>();
@@ -75,7 +110,7 @@ public class Util {
         error(ErrorType.INCOMPATIBLE_TYPES, args);
         return false;
     }
-    
+
     public Boolean declAtribCompatibilityCheck(Context mainType, ArrayList<Context> types) {
         for (Context t : types) {
             if (!declAtribCompatibilityCheck(mainType, t)) {
@@ -236,6 +271,30 @@ public class Util {
                         + ":"
                         + t2.getToken().getCharPositionInLine()
                         + "]."
+                );
+                break;
+            }
+            case ErrorType.SYMB_DOES_NOT_EXIT: {
+                Context var = (Context) args.get(0);
+                System.err.println("o símbolo '"
+                        + var.getToken().getText()
+                        + "' em ["
+                        + var.getToken().getLine()
+                        + ":"
+                        + var.getToken().getCharPositionInLine()
+                        + "] não foi previamente declarado."
+                );
+                break;
+            }
+            case ErrorType.FUNC_PARAMS_ARE_WRONG: {
+                Context func = (Context) args.get(0);
+                System.err.println("a chamada da função '"
+                        + func.getToken().getText()
+                        + "' em ["
+                        + func.getToken().getLine()
+                        + ":"
+                        + func.getToken().getCharPositionInLine()
+                        + "] não informa os parâmetros corretos."
                 );
                 break;
             }

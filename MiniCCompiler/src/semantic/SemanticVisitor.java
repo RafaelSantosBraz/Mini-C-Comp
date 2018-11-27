@@ -8,6 +8,7 @@ package semantic;
 import java.util.ArrayList;
 import parser.*;
 import parser.context.Context;
+import parser.context.FunctionContext;
 import parser.context.PointerContext;
 import parser.context.PrimitiveContext;
 
@@ -162,7 +163,15 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         Context exprContext = (Context) visit(ctx.expr());
         Context termContext = (Context) visit(ctx.term());
         Boolean constant = (exprContext.getConstant() && termContext.getConstant());
-        return new PrimitiveContext(Util.getInstance().toUpperType(exprContext, termContext),
+        Integer newType = Util.getInstance().toUpperType(exprContext, termContext);
+        if (newType != null) {
+            return new PrimitiveContext(newType,
+                    constant,
+                    ctx.getToken(CGrammarLexer.SUM, 0).getSymbol()
+            );
+        }
+        // apenas para continuar procurando erros
+        return new PrimitiveContext(Type.INT,
                 constant,
                 ctx.getToken(CGrammarLexer.SUM, 0).getSymbol()
         );
@@ -173,7 +182,15 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         Context exprContext = (Context) visit(ctx.expr());
         Context termContext = (Context) visit(ctx.term());
         Boolean constant = (exprContext.getConstant() && termContext.getConstant());
-        return new PrimitiveContext(Util.getInstance().toUpperType(exprContext, termContext),
+        Integer newType = Util.getInstance().toUpperType(exprContext, termContext);
+        if (newType != null) {
+            return new PrimitiveContext(newType,
+                    constant,
+                    ctx.getToken(CGrammarLexer.MIN, 0).getSymbol()
+            );
+        }
+        // apenas para continuar procurando erros
+        return new PrimitiveContext(Type.INT,
                 constant,
                 ctx.getToken(CGrammarLexer.MIN, 0).getSymbol()
         );
@@ -184,7 +201,15 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         Context exprContext = (Context) visit(ctx.expr());
         Context termContext = (Context) visit(ctx.term());
         Boolean constant = (exprContext.getConstant() && termContext.getConstant());
-        return new PrimitiveContext(Util.getInstance().toUpperType(exprContext, termContext),
+        Integer newType = Util.getInstance().toUpperType(exprContext, termContext);
+        if (newType != null) {
+            return new PrimitiveContext(newType,
+                    constant,
+                    exprContext.getToken()
+            );
+        }
+        // apenas para continuar procurando erros
+        return new PrimitiveContext(Type.INT,
                 constant,
                 exprContext.getToken()
         );
@@ -231,6 +256,53 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
                 constant,
                 factContext.getToken()
         );
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="fact">
+    @Override
+    public Object visitFactNum(CGrammarParser.FactNumContext ctx) {
+        return visit(ctx.num());
+    }
+
+    @Override
+    public Object visitFactStr(CGrammarParser.FactStrContext ctx) {
+        return new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol());
+    }
+
+    @Override
+    public Object visitFactChar(CGrammarParser.FactCharContext ctx) {
+        return new PrimitiveContext(Type.CHAR, true, ctx.CHARC().getSymbol());
+    }
+
+    @Override
+    public Object visitFactCall(CGrammarParser.FactCallContext ctx) {
+        return visit(ctx.funccall());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="funccall">
+    @Override
+    public Object visitFunccallReal(CGrammarParser.FunccallRealContext ctx) {
+        Context func = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.FUNCTION_MARK, false, ctx.ID().getSymbol()));
+        if (func != null) {
+            ArrayList<Context> args;
+            if (ctx.funcargs() != null) {
+                args = (ArrayList<Context>) visit(ctx.funcargs());
+            } else {
+                args = new ArrayList<>();
+            }
+            if (Util.getInstance().functionCallCheck(func, args)) {
+                return new FunctionContext(func.getType(), ctx.ID().getSymbol(), args);
+            }
+        }
+        // apenas para continuar verificando erros
+        return new FunctionContext(Type.INT, ctx.ID().getSymbol(), new ArrayList<>());
+    }
+
+    @Override
+    public Object visitFuncIsolate(CGrammarParser.FuncIsolateContext ctx) {
+        return visit(ctx.downfact());
     }
     //</editor-fold>
     

@@ -15,5 +15,8 @@ public class ErrorType {
     public static final int INDEX_IS_NOT_INT = 1;
     public static final int INDEX_IS_NOT_CONST = 2;
     public static final int INCOMPATIBLE_TYPES = 3;
-    
+    public static final int SYMB_DOES_NOT_EXIT = 4;
+    public static final int SYMB_IS_NOT_FUNCTION = 5;
+    public static final int FUNC_PARAMS_ARE_WRONG = 6;
+
 }

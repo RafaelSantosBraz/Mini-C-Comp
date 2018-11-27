@@ -7,6 +7,7 @@ package parser.context;
 
 import java.util.ArrayList;
 import org.antlr.v4.runtime.Token;
+import parser.Util;
 
 /**
  *
@@ -23,5 +24,18 @@ public class FunctionContext extends Context{
     }
     
     // métodos para tratar funções
+    
+    public Boolean paramsCheck(ArrayList<Context> args){
+        ArrayList<Context> params = (ArrayList<Context>) getValue();
+        if (params.size() != args.size()){
+            return false;
+        }
+        for (int c = 0; c < params.size(); c++){
+            if (!Util.getInstance().declAtribCompatibilityCheck(params.get(c), args.get(c))){
+                return false;
+            }
+        }
+        return true;
+    }
     
 }
