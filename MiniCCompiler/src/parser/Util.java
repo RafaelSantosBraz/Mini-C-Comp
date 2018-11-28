@@ -33,6 +33,34 @@ public class Util {
     }
     //</editor-fold>    
 
+    public Context getContentContextOf(Context context) {
+        Integer lowerType = Type.lowerType(context.getType());
+        if (lowerType != null) {
+            if (Type.isPrimitive(lowerType)) {
+                return new PrimitiveContext(lowerType, context.getConstant(), context.getToken());
+            }
+            return new PointerContext(lowerType, context.getConstant(), context.getToken());
+        }
+        ArrayList<Object> args = new ArrayList<>();
+        args.add(context);
+        error(ErrorType.CONTENT_IS_NOT_MANIPULABLE, args);
+        return null;
+    }
+
+    public Context promoteContextType(Context context) {
+        Integer promoted = Type.promoteType(context.getType());
+        if (promoted != null) {
+            if (Type.getBasicType(promoted) == Type.POINTER) {
+                return new PointerContext(promoted, context.getConstant(), context.getToken());
+            }
+            return new PointerPointerContext(promoted, context.getConstant(), context.getToken());
+        }
+        ArrayList<Object> args = new ArrayList<>();
+        args.add(context);
+        error(ErrorType.ADRESS_IS_NOT_MANIPULABLE, args);
+        return null;
+    }
+
     public Boolean functionCallCheck(Context context, ArrayList<Context> params) {
         FunctionContext func = isFunctionContext(context);
         if (func != null) {
@@ -177,7 +205,7 @@ public class Util {
 
     public Context createCorrectContextInstance(Context previousContext, Token newToken) {
         Integer basicType = Type.getBasicType(previousContext.getType());
-        if (basicType == Type.INT || basicType == Type.DOUBLE || basicType == Type.CHAR) {
+        if (Type.isPrimitive(basicType)) {
             return new PrimitiveContext(previousContext.getType(), previousContext.getConstant(), newToken);
         }
         if (basicType == Type.POINTER) {
@@ -295,6 +323,47 @@ public class Util {
                         + ":"
                         + func.getToken().getCharPositionInLine()
                         + "] não informa os parâmetros corretos."
+                );
+                break;
+            }
+            case ErrorType.FUNC_IS_CALLED_AS_VAR: {
+                Context func = (Context) args.get(0);
+                Context var = (Context) args.get(1);
+                System.err.println("a função '"
+                        + func.getToken().getText()
+                        + "' declarada em ["
+                        + func.getToken().getLine()
+                        + ":"
+                        + func.getToken().getCharPositionInLine()
+                        + "] é informada como variável em ["
+                        + var.getToken().getLine()
+                        + ":"
+                        + var.getToken().getCharPositionInLine()
+                        + "]."
+                );
+                break;
+            }
+            case ErrorType.ADRESS_IS_NOT_MANIPULABLE: {
+                Context id = (Context) args.get(0);
+                System.err.println("não é possível manipular diretamente o endereço de'"
+                        + id.getToken().getText()
+                        + "' em ["
+                        + id.getToken().getLine()
+                        + ":"
+                        + id.getToken().getCharPositionInLine()
+                        + "]."
+                );
+                break;
+            }
+            case ErrorType.CONTENT_IS_NOT_MANIPULABLE: {
+                Context id = (Context) args.get(0);
+                System.err.println("não é possível manipular diretamente o conteúdo de'"
+                        + id.getToken().getText()
+                        + "' em ["
+                        + id.getToken().getLine()
+                        + ":"
+                        + id.getToken().getCharPositionInLine()
+                        + "]."
                 );
                 break;
             }

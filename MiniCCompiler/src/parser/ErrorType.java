@@ -18,5 +18,8 @@ public class ErrorType {
     public static final int SYMB_DOES_NOT_EXIT = 4;
     public static final int SYMB_IS_NOT_FUNCTION = 5;
     public static final int FUNC_PARAMS_ARE_WRONG = 6;
+    public static final int FUNC_IS_CALLED_AS_VAR = 7;
+    public static final int ADRESS_IS_NOT_MANIPULABLE = 8;
+    public static final int CONTENT_IS_NOT_MANIPULABLE = 9;
 
 }

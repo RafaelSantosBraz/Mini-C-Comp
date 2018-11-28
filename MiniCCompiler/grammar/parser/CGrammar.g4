@@ -193,6 +193,7 @@ CLB     : '}';
 OPBR    : '[';
 CLBR    : ']';
 EOL     : ';';
+COLON   : ':';
 COMMA   : ',';
 HASHTAG : '#';
 MOR     : '>';

@@ -305,6 +305,83 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         return visit(ctx.downfact());
     }
     //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="downfact">
+    @Override
+    public Object visitDownfactId(CGrammarParser.DownfactIdContext ctx) {
+        Context var = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        if (var != null) {
+            if (!(var instanceof FunctionContext)) {
+                return Util.getInstance().createCorrectContextInstance(var, ctx.ID().getSymbol());
+            }
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(var);
+            args.add(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+            Util.getInstance().error(ErrorType.FUNC_IS_CALLED_AS_VAR, args);
+        }
+        // apenas para continuar verificando erros
+        return new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol());
+    }
+
+    @Override
+    public Object visitDownfactAdress(CGrammarParser.DownfactAdressContext ctx) {
+        Context var = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        if (var != null) {
+            if (!(var instanceof FunctionContext)) {
+                return Util.getInstance().promoteContextType(var);
+            }
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(var);
+            args.add(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+            Util.getInstance().error(ErrorType.FUNC_IS_CALLED_AS_VAR, args);
+        }
+        // apenas para continuar verificando erros
+        return new PointerContext(Type.POINTER_INT, false, ctx.ID().getSymbol());
+    }
+
+    @Override
+    public Object visitDownfactContent(CGrammarParser.DownfactContentContext ctx) {
+        Context var = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        if (var != null) {
+            if (!(var instanceof FunctionContext)) {
+                return Util.getInstance().getContentContextOf(var);
+            }
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(var);
+            args.add(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+            Util.getInstance().error(ErrorType.FUNC_IS_CALLED_AS_VAR, args);
+        }
+        // apenas para continuar verificando erros
+        return new PointerContext(Type.POINTER_INT, false, ctx.ID().getSymbol());
+    }
+
+    @Override
+    public Object visitDownfactArray(CGrammarParser.DownfactArrayContext ctx) {
+        Context exprContext = (Context) visit(ctx.expr());
+        Util.getInstance().indexCheck(exprContext);
+        Context var = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        if (var != null) {
+            if (!(var instanceof FunctionContext)) {
+                Context content = Util.getInstance().getContentContextOf(var);
+                if (content instanceof PointerContext) {
+                    return Util.getInstance().getContentContextOf(content);
+                }
+                return content;
+            }
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(var);
+            args.add(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+            Util.getInstance().error(ErrorType.FUNC_IS_CALLED_AS_VAR, args);
+        }
+        // apenas para continuar verificando erros
+        return new PointerContext(Type.POINTER_INT, false, ctx.ID().getSymbol());
+    }
+
+    @Override
+    public Object visitDownfactExpr(CGrammarParser.DownfactExprContext ctx) {
+        return visit(ctx.expr());
+    }
+    //</editor-fold>
     
     
 }
