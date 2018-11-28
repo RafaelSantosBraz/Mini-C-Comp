@@ -26,7 +26,9 @@ public class Type {
     public static final int POINTER_POINTER_CHAR = 5003;
 
     public static final int FUNCTION_MARK = 6000;
-
+    
+    public static final int VOID = 7000;
+    
     public static Integer getBasicType(Integer complexType) {
         if (complexType == INT || complexType == DOUBLE || complexType == CHAR) {
             return complexType;

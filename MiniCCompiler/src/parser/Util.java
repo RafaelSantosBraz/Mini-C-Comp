@@ -85,6 +85,10 @@ public class Util {
         return null;
     }
 
+    public Boolean doesGlobalContextExist(Context context) {
+        return SemanticTable.getInstance().getGlobalSymbolTable().isThere(context.getToken().getText());
+    }
+
     public Context getContextFromTable(Context var) {
         if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(var.getToken().getText())) {
             return SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(var.getToken().getText());
@@ -219,9 +223,18 @@ public class Util {
         return null;
     }
 
-//    public Boolean declareVar(String functionName, Context context) {
-//        SemanticTable.getInstance().getTable(functionName).addSymbol(context.getToken().getText(), context);
-//    }
+    public Boolean declareVar(String functionName, Context context) {
+        if (SemanticTable.getInstance().isThere(functionName)) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(context);
+            args.add(SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(context.getToken().getText()));
+            error(ErrorType.SYMB_ALREADY_EXISTS, args);
+            return false;
+        }
+        SemanticTable.getInstance().getTable(functionName).addSymbol(context.getToken().getText(), context);
+        return true;
+    }
+
     public Boolean declareVar(Context context) {
         if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(context.getToken().getText())) {
             ArrayList<Object> args = new ArrayList<>();

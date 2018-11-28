@@ -400,4 +400,49 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     }
     //</editor-fold>
 
+    @Override
+    public Object visitFunction(CGrammarParser.FunctionContext ctx) {
+        Context returnType = (Context) visit(ctx.returntype());
+        ArrayList<Context> params;
+        if (ctx.param() != null) {
+            params = (ArrayList<Context>) visit(ctx.param());
+        } else {
+            params = new ArrayList<>();
+        }
+        if (ctx.cmd() != null) {
+            Boolean checked = true;
+            for (CGrammarParser.CmdContext t : ctx.cmd()) {
+                if ((Context) visit(t) == null) {
+                    checked = false;
+                    break;
+                }
+            }
+            if (!checked) {
+                return null;
+            }
+        }
+        Context auxVar = new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol());
+        if (Util.getInstance().doesGlobalContextExist(auxVar)) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(auxVar);
+            args.add(Util.getInstance().getContextFromTable(auxVar));
+            Util.getInstance().error(ErrorType.SYMB_ALREADY_EXISTS, args);
+            return null;
+        }
+        Util.getInstance().declareVar(ctx.ID().getText(), new FunctionContext(returnType.getType(), ctx.ID().getSymbol(), params));
+        return null;
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="returntype">
+    @Override
+    public Object visitReturnType(CGrammarParser.ReturnTypeContext ctx) {
+        return visit(ctx.type());
+    }
+
+    @Override
+    public Object visitReturnVoid(CGrammarParser.ReturnVoidContext ctx) {
+        return new PrimitiveContext(Type.VOID, true, ctx.VOID().getSymbol());
+    }
+    //</editor-fold>
+
 }

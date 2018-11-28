@@ -23,7 +23,7 @@ num             : NUMINT                                                        
                 | NDOUBLE                                                       #numDouble
                 ;
 
-function        : returntype ID '(' param* ')' '{' cmd* '}'
+function        : returntype ID '(' param? ')' '{' cmd* '}'
                 ;
 
 returntype      : type                                                          #returnType

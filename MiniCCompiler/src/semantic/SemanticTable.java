@@ -49,4 +49,8 @@ public class SemanticTable {
         return tables.size();
     }
     
+    public Boolean isThere(String functionName){
+        return tables.containsKey(functionName);
+    }
+    
 }
