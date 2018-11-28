@@ -124,8 +124,7 @@ public class Util {
                 }
             }
         }
-        // apenas para continuar a verificação por mais erros
-        return Type.POINTER;
+        return null;
     }
 
     public Boolean MathOpCompatibilityCheck(Context type1, Context type2) {
