@@ -10,8 +10,7 @@ prog            : include* define* global* function+
 global          : decl EOL
                 ;
 
-include         : INC '<' LIB '>'                                               #includesInternal
-                | INC STR                                                       #includesExternal           
+include         : INC STR                                                       
                 ;
 
 define          : DEF ID num                                                    #defineNUM

@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import parser.*;
+import preprocessor.PreProcessor;
 import semantic.SemanticVisitor;
 
 /**
@@ -31,6 +32,8 @@ public class Run {
      */
     public static void main(String[] args) throws IOException {
         String filename = "test.c";
+        PreProcessor prep = new PreProcessor(filename);
+        prep.doPrep();
         if (args.length >= 1) {
             filename = args[0];
         }     
@@ -45,7 +48,7 @@ public class Run {
         CGrammarParser parser = new CGrammarParser(tokens);         //Parser
         CGrammarParser.ProgContext prog
                 = parser.prog();        //Exec Parser prog
-        exibir(prog);
+        //exibir(prog);
         showParseTreeFrame(prog, parser);
 //        System.out.println(SymbolTable.getInstance().dumpTable());
         SemanticVisitor pv = new SemanticVisitor();

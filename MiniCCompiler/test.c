@@ -1,12 +1,11 @@
-#include <stdio.h>
+#include "sera.h"
 
 #define a 20
+#define marvel 42
 
-
-int x = 10;
-int z[] = {1,2.0};
-int *y = *x;
-char *z = teste();
+char c = a;
+int aa = 2+a+1;
+char bc = 1+a+aa+marvel-1;
 
 int main()
 {        
