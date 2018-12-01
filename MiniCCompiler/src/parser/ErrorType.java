@@ -21,5 +21,7 @@ public class ErrorType {
     public static final int FUNC_IS_CALLED_AS_VAR = 7;
     public static final int ADRESS_IS_NOT_MANIPULABLE = 8;
     public static final int CONTENT_IS_NOT_MANIPULABLE = 9;
+    public static final int FILE_DOES_NOT_EXIST = 10;
+    public static final int FILE_MANIPULATION_ERROR = 11;
 
 }

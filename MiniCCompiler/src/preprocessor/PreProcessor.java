@@ -12,6 +12,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import parser.ErrorType;
+import parser.Util;
+import semantic.SemanticTable;
 
 /**
  *
@@ -21,7 +24,7 @@ public class PreProcessor {
 
     public static final String PART = ".part";
     public static final String DONE = ".done";
-    
+
     private final String originalName;
 
     public PreProcessor(String fileName) {
@@ -38,29 +41,33 @@ public class PreProcessor {
                 if (line.matches("#include \"(.+)\"")) {
                     String parts[] = line.split(" ");
                     String filePath = parts[1];
-                    PreProcessor prep = new PreProcessor(filePath.substring(1, filePath.length()-1));
+                    PreProcessor prep = new PreProcessor(filePath.substring(1, filePath.length() - 1));
                     if (prep.doPrep()) {
-                        FileReader fileInc = new FileReader(filePath.substring(1, filePath.length()-1) + PART + DONE);
+                        FileReader fileInc = new FileReader(filePath.substring(1, filePath.length() - 1) + PART + DONE);
                         BufferedReader bufferInc = new BufferedReader(fileInc);
                         String lineInc;
                         while ((lineInc = bufferInc.readLine()) != null) {
                             fileDone.write(lineInc);
                             fileDone.newLine();
                         }
-                    }                    
-                } else {                   
+                    }
+                } else {
                     fileDone.write(line);
-                    fileDone.newLine();                    
+                    fileDone.newLine();
                 }
             }
             fileDone.close();
         } catch (FileNotFoundException ex) {
-            // erro de arquivo não encontrado
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(originalName);
+            Util.getInstance().error(ErrorType.FILE_DOES_NOT_EXIST, args);
             return false;
         } catch (IOException ex) {
-            // erro de I/O
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(originalName);
+            Util.getInstance().error(ErrorType.FILE_MANIPULATION_ERROR, args);
             return false;
-        }       
+        }
         return true;
     }
 
@@ -100,10 +107,14 @@ public class PreProcessor {
             }
             filePart.close();
         } catch (FileNotFoundException ex) {
-            // erro de arquivo não encontrado
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(originalName);
+            Util.getInstance().error(ErrorType.FILE_DOES_NOT_EXIST, args);
             return false;
         } catch (IOException ex) {
-            // erro de I/O
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(originalName);
+            Util.getInstance().error(ErrorType.FILE_MANIPULATION_ERROR, args);
             return false;
         }
         return true;

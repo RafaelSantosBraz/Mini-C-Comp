@@ -217,6 +217,6 @@ CHARC   : ['] (~[']) ['];
 NUMINT  : '-'?[0-9]+;
 NDOUBLE : NUMINT'.'[0-9]+;
 ID      : [_a-zA-Z][_a-zA-Z0-9]*;
-STR     : '"'(~["\\\r\n])*'"';
+STR     : '"'(~["\r\n])*'"';
 WS      : [ \t\r\n]+ -> skip;
 COM     : '//'(~[\r\n])*'\r'?'\n' -> skip;

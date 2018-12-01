@@ -379,6 +379,22 @@ public class Util {
                 );
                 break;
             }
+            case ErrorType.FILE_DOES_NOT_EXIST: {
+                String file = (String) args.get(0);
+                System.err.println("arquivo '"
+                        + file
+                        + "' não encontrado para realizar o INCLUDE."
+                );
+                break;
+            }
+            case ErrorType.FILE_MANIPULATION_ERROR: {
+                String file = (String) args.get(0);
+                System.err.println("arquivo '"
+                        + file
+                        + "' não pode ser manipulado (escrita/leitura) no momento."
+                );
+                break;
+            }
         }
     }
 }
