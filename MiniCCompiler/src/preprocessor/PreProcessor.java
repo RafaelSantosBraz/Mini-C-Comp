@@ -19,8 +19,8 @@ import java.util.ArrayList;
  */
 public class PreProcessor {
 
-    private static final String PART = ".part";
-    private static final String DONE = ".done";
+    public static final String PART = ".part";
+    public static final String DONE = ".done";
     
     private final String originalName;
 

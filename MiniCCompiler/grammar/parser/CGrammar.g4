@@ -4,18 +4,10 @@ grammar CGrammar;
     package parser;
 }
 
-prog            : include* define* global* function+
+prog            : (global|function)+
                 ;
 
 global          : decl EOL
-                ;
-
-include         : INC STR                                                       
-                ;
-
-define          : DEF ID num                                                    #defineNUM
-                | DEF ID STR                                                    #defineSTR
-                | DEF ID CHARC                                                  #defineChar
                 ;
 
 num             : NUMINT                                                        #numInt
@@ -205,7 +197,6 @@ OR      : '||';
 ADRESS  : '&';
 AND     : '&&';
 NOT     : '!';
-INC     : '#include';
 IF      : 'if';
 ELSE    : 'else';
 WHILE   : 'while';
@@ -218,7 +209,6 @@ DEFAULT : 'default';
 PRINTF  : 'printf';
 SCANF   : 'scanf';
 RETURN  : 'return';
-DEF     : '#define';
 INT     : 'int';
 DOUBLE  : 'double';
 CHAR    : 'char';
@@ -227,7 +217,6 @@ CHARC   : ['] (~[']) ['];
 NUMINT  : '-'?[0-9]+;
 NDOUBLE : NUMINT'.'[0-9]+;
 ID      : [_a-zA-Z][_a-zA-Z0-9]*;
-LIB     : (~(["\\\r\n <>(){}#;&*,+]|'['|']'))+;
 STR     : '"'(~["\\\r\n])*'"';
 WS      : [ \t\r\n]+ -> skip;
 COM     : '//'(~[\r\n])*'\r'?'\n' -> skip;

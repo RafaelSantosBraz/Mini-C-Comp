@@ -17,27 +17,7 @@ import parser.context.PrimitiveContext;
  * @author rafael
  */
 public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
-
-    //<editor-fold defaultstate="collapsed" desc="define">
-    @Override
-    public Object visitDefineNUM(CGrammarParser.DefineNUMContext ctx) {
-        Context numContext = (Context) visit(ctx.num());
-        Util.getInstance().declareVar(new PrimitiveContext(numContext.getType(), numContext.getConstant(), ctx.ID().getSymbol()));
-        return null;
-    }
-
-    @Override
-    public Object visitDefineChar(CGrammarParser.DefineCharContext ctx) {
-        Util.getInstance().declareVar(new PrimitiveContext(Type.CHAR, true, ctx.ID().getSymbol()));
-        return null;
-    }
-
-    @Override
-    public Object visitDefineSTR(CGrammarParser.DefineSTRContext ctx) {
-        Util.getInstance().declareVar(new PointerContext(Type.POINTER_CHAR, true, ctx.ID().getSymbol()));
-        return null;
-    }
-    //</editor-fold>
+  
 
     //<editor-fold defaultstate="collapsed" desc="num">
     @Override

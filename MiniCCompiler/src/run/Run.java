@@ -39,7 +39,7 @@ public class Run {
         }     
         CharStream stream = null;
         if (filename != null) {
-            stream = new ANTLRFileStream(filename);
+            stream = new ANTLRFileStream(filename + PreProcessor.PART + PreProcessor.DONE);
         } else {
             stream = new ANTLRInputStream(System.in);
         }
