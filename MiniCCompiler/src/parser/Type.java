@@ -14,7 +14,7 @@ public class Type {
     public static final int INT = 1000;
     public static final int DOUBLE = 2000;
     public static final int CHAR = 3000;
-
+    
     public static final int POINTER = 4000;
     public static final int POINTER_INT = 4001;
     public static final int POINTER_DOUBLE = 4002;

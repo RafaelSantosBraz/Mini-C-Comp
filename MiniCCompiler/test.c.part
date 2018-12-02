@@ -1,11 +1,11 @@
-#include "sera.h"
 
 
-char c = 20;
-int aa = 2+20+1;
-char bc = 1+20+aa+42-1;
 
-int main()
-{        
-        return 0;
+int a = 10;
+int x[10+a] = {1,2};
+
+int main(){  
+    
+
+    return 0;
 }

@@ -56,7 +56,7 @@ forr            : FOR '(' forinit ';' cond ';' atrib ')' block
                 ;
 
 forinit         : atrib                                                         #forAtrib
-                | decl                                                          #forDecl
+                | declatrib                                                     #forDeclatrib
                 ;
 
 dowhile         : DO block WHILE '(' cond ')'
@@ -83,6 +83,8 @@ retrn           : RETURN expr
                 ;
 
 atrib           : ID '=' expr                                                   #atribSimple
+                | '*' ID '=' '&'? ID                                            #atribPointer
+                | ID '[' expr ']' '=' expr                                      #atribArray
                 | ID '+' '+'                                                    #atribPlusPlus
                 | ID '-' '-'                                                    #atribMinusMinus
                 ; 
@@ -98,8 +100,13 @@ printargs       : expr ',' printargs                                            
 scan            : SCANF '(' STR ',' scanargs')'      
                 ;
 
-scanargs        : '&' ID ',' scanargs                                           #scanargsCompose
-                | '&' ID                                                        #scanargsSingle
+scanargs        : scanargstype  ',' scanargs                                    #scanargsCompose
+                | scanargstype                                                  #scanargsSingle
+                ;
+
+scanargstype    : '&' ID                                                        #scanargstypeAddress
+                | ID                                                            #scanargstypeId                                              
+                | '&' ID '[' expr ']'                                           #scanargstypeAddressArray 
                 ;
 
 expr            : expr '+' term                                                 #exprPlus
@@ -139,11 +146,14 @@ funcargs        : expr ',' funcargs                                             
 
 decl            : type ID                                                       #declSimple
                 | type '*' ID                                                   #declPointer
-                | type ID '[' expr ']'                                          #declArray
-                | type ID '=' expr                                              #declValueSimple
-                | type '*' ID '=' expr                                          #declValuePointer
-                | type ID '[' expr? ']' '=' '{' funcargs? '}'                   #declValueArrayList
-                | CHAR ID '[' expr? ']' '=' STR                                 #declValueArrayString
+                | type ID '[' expr ']'                                          #declArray  
+                | declatrib                                                     #declDeclatrib
+                ;
+
+declatrib       : type ID '=' expr                                              #declatribValueSimple
+                | type '*' ID '=' '&'? ID                                       #declatribValuePointer
+                | type ID '[' expr? ']' '=' '{' funcargs? '}'                   #declatribValueArrayList
+                | CHAR ID '[' expr? ']' '=' STR                                 #declatribValueArrayString
                 ;
 
 ifstm           : IF '(' cond ')' block                                         #ifStm

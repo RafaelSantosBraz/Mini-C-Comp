@@ -1,8 +1,0 @@
-int x = 10;
-
-void mainha(int a){
-    x = 33;
-}
-int numsei(){
-    return 666;
-}

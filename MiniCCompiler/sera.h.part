@@ -1,4 +1,0 @@
-#include "nossa.c"
-int numsei(){
-    return 666;
-}
