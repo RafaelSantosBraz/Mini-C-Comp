@@ -33,6 +33,15 @@ public class Util {
     }
     //</editor-fold>    
 
+    public ArrayList<Context> extractScanfParams(Context context) {
+        ArrayList<Context> params = extractPrintfParams(context);
+        ArrayList<Context> newparams = new ArrayList<>();
+        params.forEach((t) -> {
+            newparams.add(promoteContextType(t));
+        });
+        return newparams;
+    }
+
     public Boolean printfArgs(ArrayList<Context> params, ArrayList<Context> realParams) {
         for (int c = 0; c < params.size(); c++) {
             if (!declAtribCompatibilityCheck(params.get(c), realParams.get(c))) {
@@ -494,6 +503,32 @@ public class Util {
                 Integer paramSize = (Integer) args.get(1);
                 Integer realSize = (Integer) args.get(2);
                 System.err.println("Comando 'printf' em "
+                        + context.getToken().getLine()
+                        + ":"
+                        + context.getToken().getCharPositionInLine()
+                        + "] esperava receber "
+                        + paramSize
+                        + ", mas "
+                        + realSize
+                        + " parâmetros foram informados."
+                );
+                break;
+            }
+            case ErrorType.SCANF_ARGS_DO_NOT_EXIST: {
+                Context context = (Context) args.get(0);
+                System.err.println("Comando 'scanf' em "
+                        + context.getToken().getLine()
+                        + ":"
+                        + context.getToken().getCharPositionInLine()
+                        + "] deve informar parâmetros a serem recebidos, mas nenhum foi informado."
+                );
+                break;
+            }
+            case ErrorType.SCANF_ARGS_INSUFFICIENT: {
+                Context context = (Context) args.get(0);
+                Integer paramSize = (Integer) args.get(1);
+                Integer realSize = (Integer) args.get(2);
+                System.err.println("Comando 'scanf' em "
                         + context.getToken().getLine()
                         + ":"
                         + context.getToken().getCharPositionInLine()

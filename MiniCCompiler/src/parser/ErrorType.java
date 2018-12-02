@@ -24,6 +24,8 @@ public class ErrorType {
     public static final int FILE_DOES_NOT_EXIST = 10;
     public static final int FILE_MANIPULATION_ERROR = 11;
     public static final int PRINTF_ARGS_UNEXPECTED = 12;
-    public static final int PRINTF_ARGS_INSUFFICIENT = 13;    
-    
+    public static final int PRINTF_ARGS_INSUFFICIENT = 13;
+    public static final int SCANF_ARGS_DO_NOT_EXIST = 14;
+    public static final int SCANF_ARGS_INSUFFICIENT = 15;
+
 }

@@ -513,6 +513,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="cmd">
     @Override
     public Object visitCmdAtrib(CGrammarParser.CmdAtribContext ctx) {
         return visit(ctx.atrib());
@@ -523,13 +524,74 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         return visit(ctx.print());
     }
 
+    @Override
+    public Object visitCmdRead(CGrammarParser.CmdReadContext ctx) {
+        return visit(ctx.scan());
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="scan">
+    @Override
+    public Object visitScan(CGrammarParser.ScanContext ctx) {
+        ArrayList<Context> params = Util.getInstance().extractScanfParams(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
+        ArrayList<Context> realArgs = (ArrayList<Context>) visit(ctx.scanargs());
+        if (params.isEmpty()) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.SCANF().getSymbol()));
+            Util.getInstance().error(ErrorType.SCANF_ARGS_DO_NOT_EXIST, args);
+            return null;
+        }
+        if (params.size() != realArgs.size()) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.SCANF().getSymbol()));
+            args.add(params.size());
+            args.add(realArgs.size());
+            Util.getInstance().error(ErrorType.SCANF_ARGS_INSUFFICIENT, args);
+            return null;
+        }
+        if (Util.getInstance().printfArgs(params, realArgs)) {
+            return new FunctionContext(Type.FUNCTION_MARK, ctx.SCANF().getSymbol());
+        }
+        return null;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="scanargs">
+    @Override
+    public Object visitScanargsCompose(CGrammarParser.ScanargsComposeContext ctx) {
+        ArrayList<Context> args = new ArrayList<>();
+        Context scanArgContext = (Context) visit(ctx.scanargstype());
+        if (scanArgContext != null) {
+            args.add(scanArgContext);
+            ArrayList<Context> argsParams = (ArrayList<Context>) visit(ctx.scanargs());
+            if (argsParams != null) {
+                args.addAll(argsParams);
+                return args;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitScanargsSingle(CGrammarParser.ScanargsSingleContext ctx) {
+        ArrayList<Context> args = new ArrayList<>();
+        Context scanArgContext = (Context) visit(ctx.scanargstype());
+        if (scanArgContext != null) {
+            args.add(scanArgContext);
+            return args;
+        }
+        return null;
+    }
+    //</editor-fold>
+
+    
+    
     //<editor-fold defaultstate="collapsed" desc="printf">
     @Override
     public Object visitPrintSimple(CGrammarParser.PrintSimpleContext ctx) {
         ArrayList<Context> params = Util.getInstance().extractPrintfParams(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
         if (!params.isEmpty()) {
             ArrayList<Object> args = new ArrayList<>();
-            args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
+            args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.PRINTF().getSymbol()));
             Util.getInstance().error(ErrorType.PRINTF_ARGS_UNEXPECTED, args);
             return new FunctionContext(Type.FUNCTION_MARK, ctx.PRINTF().getSymbol());
         }
@@ -540,10 +602,10 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     public Object visitPrintComplex(CGrammarParser.PrintComplexContext ctx) {
         ArrayList<Context> params = Util.getInstance().extractPrintfParams(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
         ArrayList<Context> realArgs = (ArrayList<Context>) visit(ctx.printargs());
-        if (params.isEmpty() && !(params.size() == realArgs.size())) {
+        if (params.isEmpty() || !(params.size() == realArgs.size())) {
             ArrayList<Object> args = new ArrayList<>();
-            args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
-            args.add(0);
+            args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.PRINTF().getSymbol()));
+            args.add(params.size());
             args.add(realArgs.size());
             Util.getInstance().error(ErrorType.PRINTF_ARGS_INSUFFICIENT, args);
             return null;
@@ -582,7 +644,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         return null;
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="atrib">
     @Override
 
