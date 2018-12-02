@@ -23,5 +23,7 @@ public class ErrorType {
     public static final int CONTENT_IS_NOT_MANIPULABLE = 9;
     public static final int FILE_DOES_NOT_EXIST = 10;
     public static final int FILE_MANIPULATION_ERROR = 11;
-
+    public static final int PRINTF_ARGS_UNEXPECTED = 12;
+    public static final int PRINTF_ARGS_INSUFFICIENT = 13;    
+    
 }

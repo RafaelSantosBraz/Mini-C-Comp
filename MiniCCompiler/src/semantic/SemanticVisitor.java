@@ -445,16 +445,27 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     @Override
     public Object visitParamCompose(CGrammarParser.ParamComposeContext ctx) {
         ArrayList<Context> args = new ArrayList<>();
-        args.add((Context) visit(ctx.paramcomplx()));
-        args.addAll((ArrayList<Context>) visit(ctx.param()));
-        return args;
+        Context paramContext = (Context) visit(ctx.paramcomplx());
+        if (paramContext != null) {
+            args.add(paramContext);
+            ArrayList<Context> params = (ArrayList<Context>) visit(ctx.param());
+            if (params != null) {
+                args.addAll(params);
+                return args;
+            }
+        }
+        return null;
     }
 
     @Override
     public Object visitParamSingle(CGrammarParser.ParamSingleContext ctx) {
         ArrayList<Context> args = new ArrayList<>();
-        args.add((Context) visit(ctx.paramcomplx()));
-        return args;
+        Context param = (Context) visit(ctx.paramcomplx());
+        if (param != null) {
+            args.add(param);
+            return args;
+        }
+        return null;
     }
     //</editor-fold>
 
@@ -506,9 +517,75 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     public Object visitCmdAtrib(CGrammarParser.CmdAtribContext ctx) {
         return visit(ctx.atrib());
     }
+
+    @Override
+    public Object visitCmdWrite(CGrammarParser.CmdWriteContext ctx) {
+        return visit(ctx.print());
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="printf">
+    @Override
+    public Object visitPrintSimple(CGrammarParser.PrintSimpleContext ctx) {
+        ArrayList<Context> params = Util.getInstance().extractPrintfParams(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
+        if (!params.isEmpty()) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
+            Util.getInstance().error(ErrorType.PRINTF_ARGS_UNEXPECTED, args);
+            return new FunctionContext(Type.FUNCTION_MARK, ctx.PRINTF().getSymbol());
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitPrintComplex(CGrammarParser.PrintComplexContext ctx) {
+        ArrayList<Context> params = Util.getInstance().extractPrintfParams(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
+        ArrayList<Context> realArgs = (ArrayList<Context>) visit(ctx.printargs());
+        if (params.isEmpty() && !(params.size() == realArgs.size())) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
+            args.add(0);
+            args.add(realArgs.size());
+            Util.getInstance().error(ErrorType.PRINTF_ARGS_INSUFFICIENT, args);
+            return null;
+        }
+        if (Util.getInstance().printfArgs(params, realArgs)) {
+            return new FunctionContext(Type.FUNCTION_MARK, ctx.PRINTF().getSymbol());
+        }
+        return null;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="printargs">
+    @Override
+    public Object visitPrintargsCompose(CGrammarParser.PrintargsComposeContext ctx) {
+        ArrayList<Context> args = new ArrayList<>();
+        Context exprContext = (Context) visit(ctx.expr());
+        if (exprContext != null) {
+            args.add(exprContext);
+            ArrayList<Context> argsParams = (ArrayList<Context>) visit(ctx.printargs());
+            if (argsParams != null) {
+                args.addAll(argsParams);
+                return args;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitPrintargsSingle(CGrammarParser.PrintargsSingleContext ctx) {
+        ArrayList<Context> args = new ArrayList<>();
+        Context exprContext = (Context) visit(ctx.expr());
+        if (exprContext != null) {
+            args.add(exprContext);
+            return args;
+        }
+        return null;
+    }
+    //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="atrib">
     @Override
+
     public Object visitAtribSimple(CGrammarParser.AtribSimpleContext ctx) {
         Context exprContext = (Context) visit(ctx.expr());
         Context var = new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol());

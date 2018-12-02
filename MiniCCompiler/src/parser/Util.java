@@ -24,7 +24,7 @@ public class Util {
 
     //<editor-fold defaultstate="collapsed" desc="SINGLETON">
     private static Util instance;
-    
+
     public static Util getInstance() {
         if (instance == null) {
             instance = new Util();
@@ -32,6 +32,76 @@ public class Util {
         return instance;
     }
     //</editor-fold>    
+
+    public Boolean printfArgs(ArrayList<Context> params, ArrayList<Context> realParams) {
+        for (int c = 0; c < params.size(); c++) {
+            if (!declAtribCompatibilityCheck(params.get(c), realParams.get(c))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public ArrayList<Context> extractPrintfParams(Context context) {
+        ArrayList<Context> params = new ArrayList<>();
+        String call = context.getToken().getText();
+        if (call.contains("%d")) {
+            params.addAll(printfParamsByType(context, Type.INT));
+        } else if (call.contains("%f")) {
+            params.addAll(printfParamsByType(context, Type.DOUBLE));
+        } else if (call.contains("%s")) {
+            params.addAll(printfParamsByType(context, Type.POINTER_CHAR));
+        } else if (call.contains("%c")) {
+            params.addAll(printfParamsByType(context, Type.CHAR));
+        }
+        params.sort((o1, o2) -> {
+            if ((Integer) o1.getValue() < (Integer) o2.getValue()) {
+                return 1;
+            }
+            if ((Integer) o1.getValue() < (Integer) o2.getValue()) {
+                return -1;
+            }
+            return 0;
+        });
+        return params;
+    }
+
+    private ArrayList<Context> printfParamsByType(Context context, int type) {
+        ArrayList<Context> params = new ArrayList<>();
+        String call = context.getToken().getText();
+        int start = 0;
+        switch (type) {
+            case Type.INT: {
+                Integer pos;
+                for (; (pos = call.indexOf("%d", start)) != -1; start = pos) {
+                    params.add(new PrimitiveContext(Type.INT, true, context.getToken(), pos));
+                }
+                break;
+            }
+            case Type.DOUBLE: {
+                Integer pos;
+                for (; (pos = call.indexOf("%f", start)) != -1; start = pos) {
+                    params.add(new PrimitiveContext(Type.DOUBLE, true, context.getToken(), pos));
+                }
+                break;
+            }
+            case Type.POINTER_CHAR: {
+                Integer pos;
+                for (; (pos = call.indexOf("%s", start)) != -1; start = pos) {
+                    params.add(new PointerContext(Type.CHAR, true, context.getToken(), pos));
+                }
+                break;
+            }
+            case Type.CHAR: {
+                Integer pos;
+                for (; (pos = call.indexOf("%c", start)) != -1; start = pos) {
+                    params.add(new PrimitiveContext(Type.CHAR, true, context.getToken(), pos));
+                }
+                break;
+            }
+        }
+        return params;
+    }
 
     public Context getContentContextOf(Context context) {
         Integer lowerType = Type.lowerType(context.getType());
@@ -46,7 +116,7 @@ public class Util {
         error(ErrorType.CONTENT_IS_NOT_MANIPULABLE, args);
         return null;
     }
-    
+
     public Context promoteContextType(Context context) {
         Integer promoted = Type.promoteType(context.getType());
         if (promoted != null) {
@@ -60,7 +130,7 @@ public class Util {
         error(ErrorType.ADRESS_IS_NOT_MANIPULABLE, args);
         return null;
     }
-    
+
     public Boolean functionCallCheck(Context context, ArrayList<Context> params) {
         FunctionContext func = isFunctionContext(context);
         if (func != null) {
@@ -77,18 +147,18 @@ public class Util {
         error(ErrorType.SYMB_IS_NOT_FUNCTION, args);
         return null;
     }
-    
+
     public FunctionContext isFunctionContext(Context func) {
         if (func instanceof FunctionContext) {
             return (FunctionContext) func;
         }
         return null;
     }
-    
+
     public Boolean doesGlobalContextExist(Context context) {
         return SemanticTable.getInstance().getGlobalSymbolTable().isThere(context.getToken().getText());
     }
-    
+
     public Context getContextFromTable(Context var) {
         if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(var.getToken().getText())) {
             return SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(var.getToken().getText());
@@ -98,7 +168,7 @@ public class Util {
         error(ErrorType.SYMB_DOES_NOT_EXIT, args);
         return null;
     }
-    
+
     public Integer toUpperType(Context type1, Context type2) {
         if (MathOpCompatibilityCheck(type1, type2)) {
             switch (type1.getType()) {
@@ -130,7 +200,7 @@ public class Util {
         }
         return null;
     }
-    
+
     public Boolean MathOpCompatibilityCheck(Context type1, Context type2) {
         if (Type.isPrimitive(type1.getType()) && Type.isPrimitive(type2.getType())) {
             return true;
@@ -141,7 +211,7 @@ public class Util {
         error(ErrorType.INCOMPATIBLE_TYPES, args);
         return false;
     }
-    
+
     public Boolean declAtribCompatibilityCheck(Context mainType, ArrayList<Context> types) {
         for (Context t : types) {
             if (!declAtribCompatibilityCheck(mainType, t)) {
@@ -154,7 +224,7 @@ public class Util {
         }
         return true;
     }
-    
+
     public Boolean declAtribCompatibilityCheck(Context type1, Context type2) {
         switch (type1.getType()) {
             case Type.DOUBLE:
@@ -183,7 +253,7 @@ public class Util {
         error(ErrorType.INCOMPATIBLE_TYPES, args);
         return false;
     }
-    
+
     public Boolean constIndexCheck(Context context) {
         if (indexCheck(context)) {
             if (context.getConstant()) {
@@ -195,7 +265,7 @@ public class Util {
         }
         return false;
     }
-    
+
     public Boolean indexCheck(Context context) {
         if (Type.getBasicType(context.getType()) == Type.INT) {
             return true;
@@ -205,7 +275,7 @@ public class Util {
         error(ErrorType.INDEX_IS_NOT_INT, args);
         return false;
     }
-    
+
     public Context createCorrectContextInstance(Context previousContext, Token newToken) {
         Integer basicType = Type.getBasicType(previousContext.getType());
         if (Type.isPrimitive(basicType)) {
@@ -222,33 +292,33 @@ public class Util {
         }
         return null;
     }
-    
-    public Boolean declareMultVar(String functionName, ArrayList<Context> vars){
-        for (Context t: vars){
-            if (!declareVar(functionName, t)){
+
+    public Boolean declareMultVar(String functionName, ArrayList<Context> vars) {
+        for (Context t : vars) {
+            if (!declareVar(functionName, t)) {
                 return false;
             }
         }
         return true;
     }
-    
-    public Boolean declareFuncInTable(String functionName, Context context){
+
+    public Boolean declareFuncInTable(String functionName, Context context) {
         if (!SemanticTable.getInstance().isThere(functionName)) {
             SemanticTable.getInstance().createTable(functionName);
             SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(functionName, context);
-        }    
+        }
         return true;
     }
-    
+
     public Boolean declareVar(String functionName, Context context) {
         if (!SemanticTable.getInstance().isThere(functionName)) {
             SemanticTable.getInstance().createTable(functionName);
             SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(functionName, context);
-        }        
+        }
         SemanticTable.getInstance().getTable(functionName).addSymbol(context.getToken().getText(), context);
         return true;
     }
-    
+
     public Boolean declareVar(Context context) {
         if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(context.getToken().getText())) {
             ArrayList<Object> args = new ArrayList<>();
@@ -260,7 +330,7 @@ public class Util {
         SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(context.getToken().getText(), context);
         return true;
     }
-    
+
     public void error(Integer errorType, ArrayList<Object> args) {
         System.err.print("Código do Erro = (" + errorType + "): ");
         switch (errorType) {
@@ -406,6 +476,32 @@ public class Util {
                 System.err.println("arquivo '"
                         + file
                         + "' não pode ser manipulado (escrita/leitura) no momento."
+                );
+                break;
+            }
+            case ErrorType.PRINTF_ARGS_UNEXPECTED: {
+                Context context = (Context) args.get(0);
+                System.err.println("Comando 'printf' em "
+                        + context.getToken().getLine()
+                        + ":"
+                        + context.getToken().getCharPositionInLine()
+                        + "] espera receber parâmetros, mas nenhum foi informado."
+                );
+                break;
+            }
+            case ErrorType.PRINTF_ARGS_INSUFFICIENT: {
+                Context context = (Context) args.get(0);
+                Integer paramSize = (Integer) args.get(1);
+                Integer realSize = (Integer) args.get(2);
+                System.err.println("Comando 'printf' em "
+                        + context.getToken().getLine()
+                        + ":"
+                        + context.getToken().getCharPositionInLine()
+                        + "] esperava receber "
+                        + paramSize
+                        + ", mas "
+                        + realSize
+                        + " parâmetros foram informados."
                 );
                 break;
             }

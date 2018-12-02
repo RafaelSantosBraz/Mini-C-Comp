@@ -17,6 +17,10 @@ public class PointerContext extends Context {
     public PointerContext(Integer type, Boolean constant, Token token) {
         super(type, constant, token, new ArrayList<Object>());
     }
+    
+    public PointerContext(Integer type, Boolean constant, Token token, Object value) {
+        super(type, constant, token, value);
+    }
 
     // métodos para tratar os valores do ponteiro
 }
