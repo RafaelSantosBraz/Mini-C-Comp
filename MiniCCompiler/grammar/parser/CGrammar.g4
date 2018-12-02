@@ -83,7 +83,7 @@ retrn           : RETURN expr
                 ;
 
 atrib           : ID '=' expr                                                   #atribSimple
-                | '*' ID '=' '&'? ID                                            #atribPointer
+                | '*' ID '=' expr                                               #atribPointer
                 | ID '[' expr ']' '=' expr                                      #atribArray
                 | ID '+' '+'                                                    #atribPlusPlus
                 | ID '-' '-'                                                    #atribMinusMinus

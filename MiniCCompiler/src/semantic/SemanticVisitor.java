@@ -502,4 +502,70 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     }
     //</editor-fold>
 
+    @Override
+    public Object visitCmdAtrib(CGrammarParser.CmdAtribContext ctx) {
+        return visit(ctx.atrib());
+    }
+    
+    //<editor-fold defaultstate="collapsed" desc="atrib">
+    @Override
+    public Object visitAtribSimple(CGrammarParser.AtribSimpleContext ctx) {
+        Context exprContext = (Context) visit(ctx.expr());
+        Context var = new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol());
+        if (exprContext != null && Util.getInstance().declAtribCompatibilityCheck(
+                Util.getInstance().getContextFromTable(var),
+                exprContext)) {
+            var = Util.getInstance().getContextFromTable(var);
+            return Util.getInstance().createCorrectContextInstance(var, ctx.ID().getSymbol());
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitAtribPointer(CGrammarParser.AtribPointerContext ctx) {
+        Context exprContext = (Context) visit(ctx.expr());
+        Context var = new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol());
+        if (exprContext != null && Util.getInstance().declAtribCompatibilityCheck(
+                Util.getInstance().getContentContextOf(Util.getInstance().getContextFromTable(var)),
+                exprContext)) {
+            var = Util.getInstance().getContentContextOf(Util.getInstance().getContextFromTable(var));
+            return Util.getInstance().createCorrectContextInstance(var, ctx.ID().getSymbol());
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitAtribArray(CGrammarParser.AtribArrayContext ctx) {
+        Context indexContext = (Context) visit(ctx.expr(0));
+        Context exprContext = (Context) visit(ctx.expr(1));
+        Context var = new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol());
+        if (indexContext != null
+                && exprContext != null
+                && Util.getInstance().getContentContextOf(Util.getInstance().getContextFromTable(var)) != null) {
+            var = Util.getInstance().getContentContextOf(Util.getInstance().getContextFromTable(var));
+            if (Util.getInstance().indexCheck(indexContext) && Util.getInstance().declAtribCompatibilityCheck(var, exprContext)) {
+                return Util.getInstance().createCorrectContextInstance(var, ctx.ID().getSymbol());
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitAtribPlusPlus(CGrammarParser.AtribPlusPlusContext ctx) {
+        Context var = new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol());
+        if ((var = Util.getInstance().getContextFromTable(var)) != null && Util.getInstance().MathOpCompatibilityCheck(var, new PrimitiveContext(Type.INT, true, ctx.getToken(CGrammarLexer.SUM, 0).getSymbol()))) {
+            return Util.getInstance().createCorrectContextInstance(var, ctx.ID().getSymbol());
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitAtribMinusMinus(CGrammarParser.AtribMinusMinusContext ctx) {
+        Context var = new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol());
+        if ((var = Util.getInstance().getContextFromTable(var)) != null && Util.getInstance().MathOpCompatibilityCheck(var, new PrimitiveContext(Type.INT, true, ctx.getToken(CGrammarLexer.SUM, 0).getSymbol()))) {
+            return Util.getInstance().createCorrectContextInstance(var, ctx.ID().getSymbol());
+        }
+        return null;
+    }
+    //</editor-fold>
 }
