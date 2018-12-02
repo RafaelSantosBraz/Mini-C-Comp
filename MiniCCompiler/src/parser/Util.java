@@ -24,7 +24,7 @@ public class Util {
 
     //<editor-fold defaultstate="collapsed" desc="SINGLETON">
     private static Util instance;
-
+    
     public static Util getInstance() {
         if (instance == null) {
             instance = new Util();
@@ -46,7 +46,7 @@ public class Util {
         error(ErrorType.CONTENT_IS_NOT_MANIPULABLE, args);
         return null;
     }
-
+    
     public Context promoteContextType(Context context) {
         Integer promoted = Type.promoteType(context.getType());
         if (promoted != null) {
@@ -60,7 +60,7 @@ public class Util {
         error(ErrorType.ADRESS_IS_NOT_MANIPULABLE, args);
         return null;
     }
-
+    
     public Boolean functionCallCheck(Context context, ArrayList<Context> params) {
         FunctionContext func = isFunctionContext(context);
         if (func != null) {
@@ -77,18 +77,18 @@ public class Util {
         error(ErrorType.SYMB_IS_NOT_FUNCTION, args);
         return null;
     }
-
+    
     public FunctionContext isFunctionContext(Context func) {
         if (func instanceof FunctionContext) {
             return (FunctionContext) func;
         }
         return null;
     }
-
+    
     public Boolean doesGlobalContextExist(Context context) {
         return SemanticTable.getInstance().getGlobalSymbolTable().isThere(context.getToken().getText());
     }
-
+    
     public Context getContextFromTable(Context var) {
         if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(var.getToken().getText())) {
             return SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(var.getToken().getText());
@@ -98,7 +98,7 @@ public class Util {
         error(ErrorType.SYMB_DOES_NOT_EXIT, args);
         return null;
     }
-
+    
     public Integer toUpperType(Context type1, Context type2) {
         if (MathOpCompatibilityCheck(type1, type2)) {
             switch (type1.getType()) {
@@ -130,7 +130,7 @@ public class Util {
         }
         return null;
     }
-
+    
     public Boolean MathOpCompatibilityCheck(Context type1, Context type2) {
         if (Type.isPrimitive(type1.getType()) && Type.isPrimitive(type2.getType())) {
             return true;
@@ -141,7 +141,7 @@ public class Util {
         error(ErrorType.INCOMPATIBLE_TYPES, args);
         return false;
     }
-
+    
     public Boolean declAtribCompatibilityCheck(Context mainType, ArrayList<Context> types) {
         for (Context t : types) {
             if (!declAtribCompatibilityCheck(mainType, t)) {
@@ -154,7 +154,7 @@ public class Util {
         }
         return true;
     }
-
+    
     public Boolean declAtribCompatibilityCheck(Context type1, Context type2) {
         switch (type1.getType()) {
             case Type.DOUBLE:
@@ -183,7 +183,7 @@ public class Util {
         error(ErrorType.INCOMPATIBLE_TYPES, args);
         return false;
     }
-
+    
     public Boolean constIndexCheck(Context context) {
         if (indexCheck(context)) {
             if (context.getConstant()) {
@@ -195,7 +195,7 @@ public class Util {
         }
         return false;
     }
-
+    
     public Boolean indexCheck(Context context) {
         if (Type.getBasicType(context.getType()) == Type.INT) {
             return true;
@@ -205,7 +205,7 @@ public class Util {
         error(ErrorType.INDEX_IS_NOT_INT, args);
         return false;
     }
-
+    
     public Context createCorrectContextInstance(Context previousContext, Token newToken) {
         Integer basicType = Type.getBasicType(previousContext.getType());
         if (Type.isPrimitive(basicType)) {
@@ -222,19 +222,33 @@ public class Util {
         }
         return null;
     }
-
-    public Boolean declareVar(String functionName, Context context) {
-        if (SemanticTable.getInstance().isThere(functionName)) {
-            ArrayList<Object> args = new ArrayList<>();
-            args.add(context);
-            args.add(SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(context.getToken().getText()));
-            error(ErrorType.SYMB_ALREADY_EXISTS, args);
-            return false;
+    
+    public Boolean declareMultVar(String functionName, ArrayList<Context> vars){
+        for (Context t: vars){
+            if (!declareVar(functionName, t)){
+                return false;
+            }
         }
+        return true;
+    }
+    
+    public Boolean declareFuncInTable(String functionName, Context context){
+        if (!SemanticTable.getInstance().isThere(functionName)) {
+            SemanticTable.getInstance().createTable(functionName);
+            SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(functionName, context);
+        }    
+        return true;
+    }
+    
+    public Boolean declareVar(String functionName, Context context) {
+        if (!SemanticTable.getInstance().isThere(functionName)) {
+            SemanticTable.getInstance().createTable(functionName);
+            SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(functionName, context);
+        }        
         SemanticTable.getInstance().getTable(functionName).addSymbol(context.getToken().getText(), context);
         return true;
     }
-
+    
     public Boolean declareVar(Context context) {
         if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(context.getToken().getText())) {
             ArrayList<Object> args = new ArrayList<>();
@@ -246,7 +260,7 @@ public class Util {
         SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(context.getToken().getText(), context);
         return true;
     }
-
+    
     public void error(Integer errorType, ArrayList<Object> args) {
         System.err.print("Código do Erro = (" + errorType + "): ");
         switch (errorType) {

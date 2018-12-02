@@ -31,6 +31,10 @@ public class SymbolTable {
     public Context getSymbol(String varName) {
         return memory.get(varName);
     }
+    
+    public void deleteSymbol(String varName){
+        memory.remove(varName);
+    }
 
 //    public String dumpTable() {
 //        StringBuilder sb = new StringBuilder();

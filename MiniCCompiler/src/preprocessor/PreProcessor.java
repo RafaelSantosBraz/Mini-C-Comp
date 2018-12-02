@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import parser.ErrorType;
 import parser.Util;
-import semantic.SemanticTable;
 
 /**
  *

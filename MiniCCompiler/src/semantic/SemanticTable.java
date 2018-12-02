@@ -13,7 +13,7 @@ import parser.*;
  * @author rafael
  */
 public class SemanticTable {
-    
+
     //<editor-fold defaultstate="collapsed" desc="SINGLETON">
     private static SemanticTable instance;
 
@@ -24,7 +24,7 @@ public class SemanticTable {
         return instance;
     }
     //</editor-fold>
-    
+
     private final SymbolTable globalSymbolTable;
     private final HashMap<String, SymbolTable> tables;
 
@@ -40,17 +40,20 @@ public class SemanticTable {
     public SymbolTable getTable(String functionName) {
         return tables.get(functionName);
     }
-    
-    public void createTable(String functionName){
+
+    public void createTable(String functionName) {
         tables.put(functionName, new SymbolTable());
     }
-    
-    public int countTables(){
+
+    public int countTables() {
         return tables.size();
     }
-    
-    public Boolean isThere(String functionName){
+
+    public Boolean isThere(String functionName) {
         return tables.containsKey(functionName);
     }
-    
+
+    public void deleteTable(String functionName) {
+        tables.remove(functionName);
+    }
 }
