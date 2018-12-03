@@ -589,8 +589,11 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
 
     @Override
     public Object visitForDeclatrib(CGrammarParser.ForDeclatribContext ctx) {
-        Context var = visit(ctx.declatrib())
-        
+        Context var = (Context) visit(ctx.declatrib());
+        if (var != null) {
+            Util.getInstance().declareVar(var);
+        }
+        return null;
     }
     //</editor-fold>
 
