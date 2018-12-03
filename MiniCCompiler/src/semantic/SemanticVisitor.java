@@ -662,6 +662,32 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="dfault">
+    @Override
+    public Object visitDefaultSimple(CGrammarParser.DefaultSimpleContext ctx) {
+        if (ctx.cmd() != null) {
+            for (CGrammarParser.CmdContext t : ctx.cmd()) {
+                if (visit(t) == null) {
+                    return null;
+                }
+            }
+        }
+        return new PrimitiveContext(Type.INT, true, ctx.DEFAULT().getSymbol());
+    }
+
+    @Override
+    public Object visitDefaultBlock(CGrammarParser.DefaultBlockContext ctx) {
+        if (ctx.cmd() != null) {
+            for (CGrammarParser.CmdContext t : ctx.cmd()) {
+                if (visit(t) == null) {
+                    return null;
+                }
+            }
+        }
+        return new PrimitiveContext(Type.INT, true, ctx.DEFAULT().getSymbol());
+    }
+    //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="ifstm">
     @Override
     public Object visitIfStm(CGrammarParser.IfStmContext ctx) {
@@ -938,4 +964,85 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         return null;
     }
     //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="cond">
+    @Override
+    public Object visitCondOr(CGrammarParser.CondOrContext ctx) {
+        if (visit(ctx.cond()) != null && visit(ctx.cdand()) != null) {
+            return new PrimitiveContext(Type.INT, true, ctx.OR().getSymbol());
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitCondAnd(CGrammarParser.CondAndContext ctx) {
+        return visit(ctx.cdand());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="cdand">
+    @Override
+    public Object visitCdandAnd(CGrammarParser.CdandAndContext ctx) {
+        if (visit(ctx.cdand()) != null && visit(ctx.cndts()) != null) {
+            return new PrimitiveContext(Type.INT, true, ctx.AND().getSymbol());
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitCdandCndts(CGrammarParser.CdandCndtsContext ctx) {
+        return visit(ctx.cndts());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="cndts">
+    @Override
+    public Object visitCndtsExpr(CGrammarParser.CndtsExprContext ctx) {
+        return visit(ctx.expr());
+    }
+
+    @Override
+    public Object visitCndtsRelop(CGrammarParser.CndtsRelopContext ctx) {
+        Integer op = (Integer) visit(ctx.relop());
+        Context expr1 = (Context) visit(ctx.expr(0));
+        Context expr2 = (Context) visit(ctx.expr(1));
+        if (expr1 != null && expr2 != null && Util.getInstance().declAtribCompatibilityCheck(expr1, expr2)) {
+            return expr1;
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitCndtsNotExprWithout(CGrammarParser.CndtsNotExprWithoutContext ctx) {
+        return visit(ctx.cndts());
+    }
+
+    @Override
+    public Object visitCndtsCond(CGrammarParser.CndtsCondContext ctx) {
+        return visit(ctx.cond());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="relop">
+    @Override
+    public Object visitRelop(CGrammarParser.RelopContext ctx) {
+        if (ctx.MOR() != null) {
+            return CGrammarLexer.MOR;
+        }
+        if (ctx.LESS() != null) {
+            return CGrammarLexer.LESS;
+        }
+        if (ctx.MOREQ() != null) {
+            return CGrammarLexer.MOREQ;
+        }
+        if (ctx.LESSEQ() != null) {
+            return CGrammarLexer.LESSEQ;
+        }
+        if (ctx.EQ() != null) {
+            return CGrammarLexer.EQ;
+        }
+        return CGrammarLexer.NEQ;
+    }
+    //</editor-fold>
+
 }

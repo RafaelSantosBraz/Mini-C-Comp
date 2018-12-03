@@ -170,12 +170,12 @@ cndts           : expr                                                          
                 | '(' cond ')'                                                  #cndtsCond
                 ;
 
-relop           : '>'
-                | '<'
-                | '>='
-                | '<='
-                | '=='
-                | '!='
+relop           : MOR
+                | LESS 
+                | MOREQ 
+                | LESSEQ 
+                | EQ
+                | NEQ 
                 ;
 
 EQUALS  : '=';   
