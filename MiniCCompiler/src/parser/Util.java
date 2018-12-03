@@ -159,7 +159,7 @@ public class Util {
             ArrayList<Object> args = new ArrayList<>();
             args.add(context);
             error(ErrorType.FUNC_PARAMS_ARE_WRONG, args);
-            return null;
+            return false;
         }
         ArrayList<Object> args = new ArrayList<>();
         args.add(context);

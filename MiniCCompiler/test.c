@@ -1,12 +1,11 @@
-#define x 10
+void soma(int a, int b){
+    int resultado;
+    resultado = a + b;
+    return resultado;
+}
 
-int a = 10;
-
-int main(int b){
-    b = 42;
-    int c = a + b;
-    for (int i = 0; i < 10; i++){
-        printf("%d\n", c);
-    }
-    return 0;
+int main(){
+    int x = 2;
+    int y = 3;
+    int res = soma(x,y) + 1;
 }

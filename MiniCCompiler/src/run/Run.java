@@ -26,7 +26,7 @@ import semantic.SemanticVisitor;
  *
  * @author wellington
  */
-public class Run {    
+public class Run {
 
     /**
      * @param args the command line arguments
@@ -37,7 +37,7 @@ public class Run {
         prep.doPrep();
         if (args.length >= 1) {
             filename = args[0];
-        }     
+        }
         CharStream stream = null;
         if (filename != null) {
             stream = new ANTLRFileStream(filename + PreProcessor.PART + PreProcessor.DONE);
@@ -51,21 +51,21 @@ public class Run {
                 = parser.prog();        //Exec Parser prog
         //exibir(prog);
         showParseTreeFrame(prog, parser);
-//        System.out.println(SymbolTable.getInstance().dumpTable());
+        //System.out.println(SymbolTable.getInstance().dumpTable());
         SemanticVisitor pv = new SemanticVisitor();
         pv.visit(prog);
-        SemanticTable t = SemanticTable.getInstance();
-        int i = t.countTables();
+        //SemanticTable t = SemanticTable.getInstance();
+        //int i = t.countTables();
     }
-    
-    public static void exibir(ParseTree tree){
-        for (int c = 0; c < tree.getChildCount(); c++){
+
+    public static void exibir(ParseTree tree) {
+        for (int c = 0; c < tree.getChildCount(); c++) {
             System.out.println(tree.getChild(c).getPayload());
             exibir(tree.getChild(c));
         }
     }
 
-    private static void showParseTreeFrame(ParseTree tree, CGrammarParser parser) throws HeadlessException {        
+    private static void showParseTreeFrame(ParseTree tree, CGrammarParser parser) throws HeadlessException {
         JFrame frame = new JFrame("SRC: " + tree.getText());
         JPanel panel = new JPanel();
         TreeViewer viewr = new TreeViewer(Arrays.asList(

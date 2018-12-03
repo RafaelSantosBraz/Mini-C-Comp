@@ -866,16 +866,18 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     public Object visitPrintComplex(CGrammarParser.PrintComplexContext ctx) {
         ArrayList<Context> params = Util.getInstance().extractPrintfParams(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
         ArrayList<Context> realArgs = (ArrayList<Context>) visit(ctx.printargs());
-        if (params.isEmpty() || !(params.size() == realArgs.size())) {
-            ArrayList<Object> args = new ArrayList<>();
-            args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.PRINTF().getSymbol()));
-            args.add(params.size());
-            args.add(realArgs.size());
-            Util.getInstance().error(ErrorType.PRINTF_ARGS_INSUFFICIENT, args);
-            return null;
-        }
-        if (Util.getInstance().printfArgs(params, realArgs)) {
-            return new FunctionContext(Type.FUNCTION_MARK, ctx.PRINTF().getSymbol());
+        if (params != null && realArgs != null) {
+            if (params.isEmpty() || !(params.size() == realArgs.size())) {
+                ArrayList<Object> args = new ArrayList<>();
+                args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.PRINTF().getSymbol()));
+                args.add(params.size());
+                args.add(realArgs.size());
+                Util.getInstance().error(ErrorType.PRINTF_ARGS_INSUFFICIENT, args);
+                return null;
+            }
+            if (Util.getInstance().printfArgs(params, realArgs)) {
+                return new FunctionContext(Type.FUNCTION_MARK, ctx.PRINTF().getSymbol());
+            }
         }
         return null;
     }
@@ -914,10 +916,8 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
 
     public Object visitAtribSimple(CGrammarParser.AtribSimpleContext ctx) {
         Context exprContext = (Context) visit(ctx.expr());
-        Context var = new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol());
-        if (exprContext != null && Util.getInstance().declAtribCompatibilityCheck(
-                Util.getInstance().getContextFromTable(var),
-                exprContext)) {
+        Context var = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));        
+        if (exprContext != null && var != null && Util.getInstance().declAtribCompatibilityCheck(var, exprContext)) {
             var = Util.getInstance().getContextFromTable(var);
             return Util.getInstance().createCorrectContextInstance(var, ctx.ID().getSymbol());
         }
@@ -1050,6 +1050,6 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         }
         return CGrammarLexer.NEQ;
     }
-    //</editor-fold>
+    //</editor-fold>    
 
 }

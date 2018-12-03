@@ -14,7 +14,7 @@ public class Type {
     public static final int INT = 1000;
     public static final int DOUBLE = 2000;
     public static final int CHAR = 3000;
-    
+
     public static final int POINTER = 4000;
     public static final int POINTER_INT = 4001;
     public static final int POINTER_DOUBLE = 4002;
@@ -26,9 +26,9 @@ public class Type {
     public static final int POINTER_POINTER_CHAR = 5003;
 
     public static final int FUNCTION_MARK = 6000;
-    
+
     public static final int VOID = 7000;
-    
+
     public static Integer getBasicType(Integer complexType) {
         if (complexType == INT || complexType == DOUBLE || complexType == CHAR) {
             return complexType;
@@ -98,6 +98,8 @@ public class Type {
                 return "double[][]";
             case POINTER_POINTER_CHAR:
                 return "char[][]";
+            case VOID:
+                return "void";
             default:
                 return null;
         }
