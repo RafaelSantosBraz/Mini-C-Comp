@@ -33,6 +33,16 @@ public class Util {
     }
     //</editor-fold>    
 
+    private String currentFuncName = null;
+
+    public String getCurrentFuncName() {
+        return currentFuncName;
+    }
+
+    public void setCurrentFuncName(String currentFuncName) {
+        this.currentFuncName = currentFuncName;
+    }
+
     public ArrayList<Context> extractScanfParams(Context context) {
         ArrayList<Context> params = extractPrintfParams(context);
         ArrayList<Context> newparams = new ArrayList<>();
@@ -82,28 +92,28 @@ public class Util {
         switch (type) {
             case Type.INT: {
                 Integer pos;
-                for (; (pos = call.indexOf("%d", start)) != -1; start = pos) {
+                for (; (pos = call.indexOf("%d", start)) != -1; start = pos + 1) {
                     params.add(new PrimitiveContext(Type.INT, true, context.getToken(), pos));
                 }
                 break;
             }
             case Type.DOUBLE: {
                 Integer pos;
-                for (; (pos = call.indexOf("%f", start)) != -1; start = pos) {
+                for (; (pos = call.indexOf("%f", start)) != -1; start = pos + 1) {
                     params.add(new PrimitiveContext(Type.DOUBLE, true, context.getToken(), pos));
                 }
                 break;
             }
             case Type.POINTER_CHAR: {
                 Integer pos;
-                for (; (pos = call.indexOf("%s", start)) != -1; start = pos) {
+                for (; (pos = call.indexOf("%s", start)) != -1; start = pos + 1) {
                     params.add(new PointerContext(Type.CHAR, true, context.getToken(), pos));
                 }
                 break;
             }
             case Type.CHAR: {
                 Integer pos;
-                for (; (pos = call.indexOf("%c", start)) != -1; start = pos) {
+                for (; (pos = call.indexOf("%c", start)) != -1; start = pos + 1) {
                     params.add(new PrimitiveContext(Type.CHAR, true, context.getToken(), pos));
                 }
                 break;
@@ -171,6 +181,15 @@ public class Util {
     public Context getContextFromTable(Context var) {
         if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(var.getToken().getText())) {
             return SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(var.getToken().getText());
+        }
+        if (currentFuncName == null) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(var);
+            error(ErrorType.SYMB_DOES_NOT_EXIT, args);
+            return null;
+        }
+        if (SemanticTable.getInstance().getTable(currentFuncName).isThere(var.getToken().getText())) {
+            return SemanticTable.getInstance().getTable(currentFuncName).getSymbol(var.getToken().getText());
         }
         ArrayList<Object> args = new ArrayList<>();
         args.add(var);
@@ -302,32 +321,39 @@ public class Util {
         return null;
     }
 
-    public Boolean declareMultVar(String functionName, ArrayList<Context> vars) {
-        for (Context t : vars) {
-            if (!declareVar(functionName, t)) {
-                return false;
+    public Boolean declareMultVar(ArrayList<Context> vars) {
+        if (vars != null) {
+            for (Context t : vars) {
+                if (!declareVar(t)) {
+                    return false;
+                }
             }
+            return true;
         }
-        return true;
+        return false;
     }
 
     public Boolean declareFuncInTable(String functionName, Context context) {
         if (!SemanticTable.getInstance().isThere(functionName)) {
             SemanticTable.getInstance().createTable(functionName);
             SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(functionName, context);
+            return true;
         }
-        return true;
+        ArrayList<Object> args = new ArrayList<>();
+        args.add(context);
+        args.add(SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(context.getToken().getText()));
+        error(ErrorType.SYMB_ALREADY_EXISTS, args);
+        return false;
     }
 
-    public Boolean declareVar(String functionName, Context context) {
-        if (!SemanticTable.getInstance().isThere(functionName)) {
-            SemanticTable.getInstance().createTable(functionName);
-            SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(functionName, context);
-        }
-        SemanticTable.getInstance().getTable(functionName).addSymbol(context.getToken().getText(), context);
-        return true;
-    }
-
+//    public Boolean declareVar(String functionName, Context context) {
+//        if (!SemanticTable.getInstance().isThere(functionName)) {
+//            SemanticTable.getInstance().createTable(functionName);
+//            SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(functionName, context);
+//        }
+//        SemanticTable.getInstance().getTable(functionName).addSymbol(context.getToken().getText(), context);
+//        return true;
+//    }
     public Boolean declareVar(Context context) {
         if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(context.getToken().getText())) {
             ArrayList<Object> args = new ArrayList<>();
@@ -336,7 +362,18 @@ public class Util {
             error(ErrorType.SYMB_ALREADY_EXISTS, args);
             return false;
         }
-        SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(context.getToken().getText(), context);
+        if (currentFuncName == null) {
+            SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(context.getToken().getText(), context);
+            return true;
+        }
+        if (SemanticTable.getInstance().getTable(currentFuncName).isThere(context.getToken().getText())) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(context);
+            args.add(SemanticTable.getInstance().getTable(currentFuncName).getSymbol(context.getToken().getText()));
+            error(ErrorType.SYMB_ALREADY_EXISTS, args);
+            return false;
+        }
+        SemanticTable.getInstance().getTable(currentFuncName).addSymbol(context.getToken().getText(), context);
         return true;
     }
 

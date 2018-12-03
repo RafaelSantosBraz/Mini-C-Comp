@@ -34,6 +34,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     @Override
     public Object visitGlobal(CGrammarParser.GlobalContext ctx) {
         Context c = (Context) visit(ctx.decl());
+        Util.getInstance().setCurrentFuncName(null);
         if (c != null) {
             Util.getInstance().declareVar(c);
         }
@@ -102,7 +103,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         ArrayList<Context> funcArgsContext;
         if (ctx.expr() != null) {
             exprContext = (Context) visit(ctx.expr());
-            if (Util.getInstance().constIndexCheck(exprContext)) {
+            if (exprContext != null && Util.getInstance().constIndexCheck(exprContext)) {
                 if (ctx.funcargs() != null) {
                     funcArgsContext = (ArrayList<Context>) visit(ctx.funcargs());
                     if (funcArgsContext != null && Util.getInstance().declAtribCompatibilityCheck(typeContext, funcArgsContext)) {
@@ -397,8 +398,9 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
             Util.getInstance().error(ErrorType.SYMB_ALREADY_EXISTS, args);
             return null;
         }
+        Util.getInstance().setCurrentFuncName(ctx.ID().getText());
         Util.getInstance().declareFuncInTable(ctx.ID().getText(), new FunctionContext(returnType.getType(), ctx.ID().getSymbol(), params));
-        Util.getInstance().declareMultVar(ctx.ID().getText(), params);
+        Util.getInstance().declareMultVar(params);
         if (ctx.cmd() != null) {
             Boolean checked = true;
             for (CGrammarParser.CmdContext t : ctx.cmd()) {
@@ -410,10 +412,11 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
             if (!checked) {
                 SemanticTable.getInstance().getGlobalSymbolTable().deleteSymbol(ctx.ID().getText());
                 SemanticTable.getInstance().deleteTable(ctx.ID().getText());
+                Util.getInstance().setCurrentFuncName(null);
                 return null;
             }
         }
-        return null;
+        return returnType;
     }
     //</editor-fold>
 
@@ -586,7 +589,8 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
 
     @Override
     public Object visitForDeclatrib(CGrammarParser.ForDeclatribContext ctx) {
-        return visit(ctx.declatrib());
+        Context var = visit(ctx.declatrib())
+        
     }
     //</editor-fold>
 
@@ -842,7 +846,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     }
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="printf">
+    //<editor-fold defaultstate="collapsed" desc="print">
     @Override
     public Object visitPrintSimple(CGrammarParser.PrintSimpleContext ctx) {
         ArrayList<Context> params = Util.getInstance().extractPrintfParams(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));

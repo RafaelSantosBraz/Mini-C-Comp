@@ -50,7 +50,7 @@ public class Run {
         CGrammarParser.ProgContext prog
                 = parser.prog();        //Exec Parser prog
         //exibir(prog);
-        showParseTreeFrame(prog, parser);
+        //showParseTreeFrame(prog, parser);
 //        System.out.println(SymbolTable.getInstance().dumpTable());
         SemanticVisitor pv = new SemanticVisitor();
         pv.visit(prog);
