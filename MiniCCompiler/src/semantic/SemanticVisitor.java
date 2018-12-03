@@ -296,19 +296,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     //<editor-fold defaultstate="collapsed" desc="funccall">
     @Override
     public Object visitFunccallReal(CGrammarParser.FunccallRealContext ctx) {
-        Context func = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.FUNCTION_MARK, false, ctx.ID().getSymbol()));
-        if (func != null) {
-            ArrayList<Context> args;
-            if (ctx.funcargs() != null) {
-                args = (ArrayList<Context>) visit(ctx.funcargs());
-            } else {
-                args = new ArrayList<>();
-            }
-            if (args != null && Util.getInstance().functionCallCheck(func, args)) {
-                return new FunctionContext(func.getType(), ctx.ID().getSymbol(), args);
-            }
-        }
-        return null;
+        return visit(ctx.funccallact());
     }
 
     @Override
@@ -529,6 +517,223 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         return visit(ctx.scan());
     }
 
+    @Override
+    public Object visitCmdDecl(CGrammarParser.CmdDeclContext ctx) {
+        Context c = (Context) visit(ctx.decl());
+        if (c != null) {
+            if (Util.getInstance().declareVar(c)) {
+                return Util.getInstance().getContextFromTable(c);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitCmdReturn(CGrammarParser.CmdReturnContext ctx) {
+        return visit(ctx.retrn());
+    }
+
+    @Override
+    public Object visitCmdFunccall(CGrammarParser.CmdFunccallContext ctx) {
+        return visit(ctx.funccallact());
+    }
+
+    @Override
+    public Object visitCmdIf(CGrammarParser.CmdIfContext ctx) {
+        return visit(ctx.ifstm());
+    }
+
+    @Override
+    public Object visitCmdswitch(CGrammarParser.CmdswitchContext ctx) {
+        return visit(ctx.swtstm());
+    }
+
+    @Override
+    public Object visitCmdWhile(CGrammarParser.CmdWhileContext ctx) {
+        return visit(ctx.whilee());
+    }
+
+    @Override
+    public Object visitCmdDoWhile(CGrammarParser.CmdDoWhileContext ctx) {
+        return visit(ctx.dowhile());
+    }
+
+    @Override
+    public Object visitCmdFor(CGrammarParser.CmdForContext ctx) {
+        return visit(ctx.forr());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="forr">
+    @Override
+    public Object visitForr(CGrammarParser.ForrContext ctx) {
+        Context initContext = (Context) visit(ctx.forinit());
+        Context condContext = (Context) visit(ctx.cond());
+        Context atribContext = (Context) visit(ctx.atrib());
+        Context blockContext = (Context) visit(ctx.block());
+        if (initContext != null && condContext != null && atribContext != null && blockContext != null) {
+            return condContext;
+        }
+        return null;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="forinit">
+    @Override
+    public Object visitForAtrib(CGrammarParser.ForAtribContext ctx) {
+        return visit(ctx.atrib());
+    }
+
+    @Override
+    public Object visitForDeclatrib(CGrammarParser.ForDeclatribContext ctx) {
+        return visit(ctx.declatrib());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="dowhile">
+    @Override
+    public Object visitDowhile(CGrammarParser.DowhileContext ctx) {
+        Context condContext = (Context) visit(ctx.cond());
+        if (condContext != null && visit(ctx.block()) != null) {
+            return condContext;
+        }
+        return null;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="whilee">
+    @Override
+    public Object visitWhilee(CGrammarParser.WhileeContext ctx) {
+        Context condContext = (Context) visit(ctx.cond());
+        if (condContext != null && visit(ctx.block()) != null) {
+            return condContext;
+        }
+        return null;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="swtstm">
+    @Override
+    public Object visitSwtstm(CGrammarParser.SwtstmContext ctx) {
+        Context exprContext = (Context) visit(ctx.expr());
+        if (exprContext != null && Util.getInstance().indexCheck(exprContext)) {
+            if (ctx.cases() == null && ctx.dfault() == null) {
+                return exprContext;
+            }
+            if (ctx.cases() != null) {
+                for (CGrammarParser.CasesContext t : ctx.cases()) {
+                    if (visit(t) == null) {
+                        return null;
+                    }
+                }
+                return exprContext;
+            }
+            if (visit(ctx.dfault()) != null) {
+                return exprContext;
+            }
+        }
+        return null;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="cases">
+    @Override
+    public Object visitCaseSimple(CGrammarParser.CaseSimpleContext ctx) {
+        if (ctx.cmd() != null) {
+            for (CGrammarParser.CmdContext t : ctx.cmd()) {
+                if (visit(t) == null) {
+                    return null;
+                }
+            }
+        }
+        return new PrimitiveContext(Type.INT, true, ctx.CASE().getSymbol());
+    }
+
+    @Override
+    public Object visitCaseBlock(CGrammarParser.CaseBlockContext ctx) {
+        if (ctx.cmd() != null) {
+            for (CGrammarParser.CmdContext t : ctx.cmd()) {
+                if (visit(t) == null) {
+                    return null;
+                }
+            }
+        }
+        return new PrimitiveContext(Type.INT, true, ctx.CASE().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="ifstm">
+    @Override
+    public Object visitIfStm(CGrammarParser.IfStmContext ctx) {
+        Context condContext = (Context) visit(ctx.cond());
+        if (condContext != null && visit(ctx.block()) != null) {
+            // apenas para manter o padrão object/null
+            return condContext;
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitIfStmElse(CGrammarParser.IfStmElseContext ctx) {
+        Context condContext = (Context) visit(ctx.cond());
+        if (condContext != null && visit(ctx.block(0)) != null && visit(ctx.block(1)) != null) {
+            // apenas para manter o padrão object/null
+            return condContext;
+        }
+        return null;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="block">
+    @Override
+    public Object visitBlockCompose(CGrammarParser.BlockComposeContext ctx) {
+        if (ctx.cmd() != null) {
+            for (CGrammarParser.CmdContext t : ctx.cmd()) {
+                if (visit(t) == null) {
+                    return null;
+                }
+            }
+        }
+        // manter padrão object/null
+        return new PointerContext(Type.POINTER_CHAR, true, ctx.OPB().getSymbol());
+    }
+
+    @Override
+    public Object visitBlockSingle(CGrammarParser.BlockSingleContext ctx) {
+        if (ctx.cmd() != null) {
+            return visit(ctx.cmd());
+        }
+        // manter padrão object/null -> impossível gerar token
+        return true;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="funccallact">
+    @Override
+    public Object visitFunccallact(CGrammarParser.FunccallactContext ctx) {
+        Context func = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.FUNCTION_MARK, false, ctx.ID().getSymbol()));
+        if (func != null) {
+            ArrayList<Context> args;
+            if (ctx.funcargs() != null) {
+                args = (ArrayList<Context>) visit(ctx.funcargs());
+            } else {
+                args = new ArrayList<>();
+            }
+            if (args != null && Util.getInstance().functionCallCheck(func, args)) {
+                return new FunctionContext(func.getType(), ctx.ID().getSymbol(), args);
+            }
+        }
+        return null;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="retrn">
+    @Override
+    public Object visitRetrn(CGrammarParser.RetrnContext ctx) {
+        return visit(ctx.expr());
+    }
+    //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="scan">
     @Override
     public Object visitScan(CGrammarParser.ScanContext ctx) {
@@ -583,8 +788,34 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     }
     //</editor-fold>
 
-    
-    
+    //<editor-fold defaultstate="collapsed" desc="scanargstype">
+    @Override
+    public Object visitScanargstypeAddress(CGrammarParser.ScanargstypeAddressContext ctx) {
+        Context var = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        if (var != null) {
+            return Util.getInstance().promoteContextType(var);
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitScanargstypeId(CGrammarParser.ScanargstypeIdContext ctx) {
+        return Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+    }
+
+    @Override
+    public Object visitScanargstypeAddressArray(CGrammarParser.ScanargstypeAddressArrayContext ctx) {
+        Context exprContext = (Context) visit(ctx.expr());
+        if (exprContext != null && Util.getInstance().indexCheck(exprContext)) {
+            Context var = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+            if (var != null) {
+                return Util.getInstance().createCorrectContextInstance(var, ctx.ID().getSymbol());
+            }
+        }
+        return null;
+    }
+    //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="printf">
     @Override
     public Object visitPrintSimple(CGrammarParser.PrintSimpleContext ctx) {

@@ -36,7 +36,7 @@ paramcomplx     : type ID                                                       
                 ;
 
 block           : cmd?                                                          #blockSingle
-                | '{' cmd* '}'                                                  #blockCompose
+                | OPB cmd* CLB                                                  #blockCompose
                 ;
 
 cmd             : atrib EOL                                                     #cmdAtrib
@@ -67,12 +67,8 @@ whilee          : WHILE '(' cond ')' block;
 swtstm          : SWITCH '(' expr ')' '{' cases* dfault?'}'  
                 ;
 
-cases           : CASE casetype ':' cmd* BREAK?                                 #caseSimple
-                | CASE casetype ':' '{' cmd* BREAK? '}'                         #caseBlock
-                ;
-
-casetype        : NUMINT                                                        #casetypeInt
-                | CHARC                                                         #casetypeChar
+cases           : CASE NUMINT ':' cmd* BREAK?                                   #caseSimple
+                | CASE NUMINT ':' '{' cmd* BREAK? '}'                           #caseBlock
                 ;
 
 dfault          : DEFAULT ':' cmd* BREAK?                                       #defaultSimple
@@ -129,7 +125,7 @@ fact            : num                                                           
 funccallact     : ID '(' funcargs? ')'
                 ;
 
-funccall        : ID '(' funcargs? ')'                                          #funccallReal
+funccall        : funccallact                                                   #funccallReal
                 | downfact                                                      #funcIsolate
                 ;
 
@@ -157,7 +153,7 @@ declatrib       : type ID '=' expr                                              
                 ;
 
 ifstm           : IF '(' cond ')' block                                         #ifStm
-                | IF '(' cond ')' b1=block ELSE b2=block                        #ifStmElse
+                | IF '(' cond ')' block ELSE block                              #ifStmElse
                 ;
 
 cond            : cond OR cdand                                                 #condOr
@@ -169,7 +165,7 @@ cdand           : cdand AND cndts                                               
                 ;
 
 cndts           : expr                                                          #cndtsExpr
-                | e1=expr relop e2=expr                                         #cndtsRelop                
+                | expr relop expr                                               #cndtsRelop                
                 | '!' cndts                                                     #cndtsNotExprWithout                
                 | '(' cond ')'                                                  #cndtsCond
                 ;
