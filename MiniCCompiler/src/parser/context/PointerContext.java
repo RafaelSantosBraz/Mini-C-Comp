@@ -6,6 +6,7 @@
 package parser.context;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.antlr.v4.runtime.Token;
 
 /**
@@ -13,14 +14,27 @@ import org.antlr.v4.runtime.Token;
  * @author rafael
  */
 public class PointerContext extends Context {
-
+    
     public PointerContext(Integer type, Boolean constant, Token token) {
-        super(type, constant, token, new ArrayList<Object>());
+        super(type, constant, token, new Value(new HashMap<Integer, Object>()));
     }
     
-    public PointerContext(Integer type, Boolean constant, Token token, Object value) {
+    public PointerContext(Integer type, Boolean constant, Token token, Value value) {
         super(type, constant, token, value);
     }
 
     // métodos para tratar os valores do ponteiro
+    public void addPointValue(Object value, Integer pos) {
+        ((HashMap<Integer, Object>) getValue().getRealValue()).put(pos, value);
+    }
+    
+    public Object getPointValue(Integer pos) {
+        return ((HashMap<Integer, Object>) getValue().getRealValue()).get(pos);
+    }
+    
+    public void addPointValueListFromContext(ArrayList<Context> args) {
+        for (int c = 0; c < args.size(); c++) {
+            addPointValue(args.get(c), c);
+        }
+    }
 }

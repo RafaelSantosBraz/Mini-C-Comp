@@ -17,7 +17,7 @@ public class PrimitiveContext extends Context {
         super(type, constant, token);
     }
 
-    public PrimitiveContext(Integer type, Boolean constant, Token token, Object value) {
+    public PrimitiveContext(Integer type, Boolean constant, Token token, Value value) {
         super(type, constant, token, value);
     }
 

@@ -15,7 +15,7 @@ import org.antlr.v4.runtime.Token;
 public class PointerPointerContext extends Context {
 
     public PointerPointerContext(Integer type, Boolean constant, Token token) {
-        super(type, constant, token, new ArrayList<ArrayList<Object>>());
+        super(type, constant, token, new Value(new ArrayList<ArrayList<Context>>()));
     }
 
     // métodos para tratar os valores do ponteiro do ponteiro

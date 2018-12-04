@@ -13,29 +13,28 @@ import parser.Util;
  *
  * @author rafael
  */
-public class FunctionContext extends Context{
-    
+public class FunctionContext extends Context {
+
     public FunctionContext(Integer returntype, Token token) {
-        super(returntype, false, token, new ArrayList<Context>());
+        super(returntype, false, token, new Value(new ArrayList<Context>()));
     }
-    
+
     public FunctionContext(Integer returntype, Token token, ArrayList<Context> args) {
-        super(returntype, false, token, args);
+        super(returntype, false, token, new Value(args));
     }
-    
+
     // métodos para tratar funções
-    
-    public Boolean paramsCheck(ArrayList<Context> args){
-        ArrayList<Context> params = (ArrayList<Context>) getValue();
-        if (params.size() != args.size()){
+    public Boolean paramsCheck(ArrayList<Context> args) {
+        ArrayList<Context> params = (ArrayList<Context>) getValue().getRealValue();
+        if (params.size() != args.size()) {
             return false;
         }
-        for (int c = 0; c < params.size(); c++){
-            if (!Util.getInstance().declAtribCompatibilityCheck(params.get(c), args.get(c))){
+        for (int c = 0; c < params.size(); c++) {
+            if (!Util.getInstance().declAtribCompatibilityCheck(params.get(c), args.get(c))) {
                 return false;
             }
         }
         return true;
     }
-    
+
 }

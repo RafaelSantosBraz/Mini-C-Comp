@@ -1,4 +1,4 @@
-void soma(int a, int b){
+int soma(int a, int b){
     int resultado;
     resultado = a + b;
     return resultado;
@@ -6,6 +6,6 @@ void soma(int a, int b){
 
 int main(){
     int x = 2;
-    int y = 3;
-    int res = soma(x,y) + 1;
+    int *y = &x;
 }
+

@@ -16,7 +16,7 @@ public class Context {
     private final Integer type;
     private final Boolean constant;
     private final Token token;
-    private Object value;
+    private Value value;
 
     public Context(Integer type, Boolean constant, Token token) {
         this.type = type;
@@ -25,7 +25,7 @@ public class Context {
         value = null;
     }
 
-    public Context(Integer type, Boolean constant, Token token, Object value) {
+    public Context(Integer type, Boolean constant, Token token, Value value) {
         this.type = type;
         this.constant = constant;
         this.token = token;
@@ -44,11 +44,11 @@ public class Context {
         return constant;
     }
 
-    public Object getValue() {
+    public Value getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(Value value) {
         this.value = value;
     }
 

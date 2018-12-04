@@ -13,6 +13,7 @@ import parser.context.FunctionContext;
 import parser.context.PointerContext;
 import parser.context.PointerPointerContext;
 import parser.context.PrimitiveContext;
+import parser.context.Value;
 import semantic.SemanticTable;
 
 /**
@@ -41,6 +42,22 @@ public class Util {
 
     public void setCurrentFuncName(String currentFuncName) {
         this.currentFuncName = currentFuncName;
+    }
+
+    public Double stringDoubleConvertion(String n) {
+        try {
+            return Double.parseDouble(n);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public Integer stringIntConvertion(String n) {
+        try {
+            return Integer.parseInt(n);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public ArrayList<Context> extractScanfParams(Context context) {
@@ -74,10 +91,10 @@ public class Util {
             params.addAll(printfParamsByType(context, Type.CHAR));
         }
         params.sort((o1, o2) -> {
-            if ((Integer) o1.getValue() < (Integer) o2.getValue()) {
+            if ((Integer) o1.getValue().getRealValue() < (Integer) o2.getValue().getRealValue()) {
                 return 1;
             }
-            if ((Integer) o1.getValue() < (Integer) o2.getValue()) {
+            if ((Integer) o1.getValue().getRealValue() < (Integer) o2.getValue().getRealValue()) {
                 return -1;
             }
             return 0;
@@ -93,28 +110,28 @@ public class Util {
             case Type.INT: {
                 Integer pos;
                 for (; (pos = call.indexOf("%d", start)) != -1; start = pos + 1) {
-                    params.add(new PrimitiveContext(Type.INT, true, context.getToken(), pos));
+                    params.add(new PrimitiveContext(Type.INT, true, context.getToken(), new Value(pos)));
                 }
                 break;
             }
             case Type.DOUBLE: {
                 Integer pos;
                 for (; (pos = call.indexOf("%f", start)) != -1; start = pos + 1) {
-                    params.add(new PrimitiveContext(Type.DOUBLE, true, context.getToken(), pos));
+                    params.add(new PrimitiveContext(Type.DOUBLE, true, context.getToken(), new Value(pos)));
                 }
                 break;
             }
             case Type.POINTER_CHAR: {
                 Integer pos;
                 for (; (pos = call.indexOf("%s", start)) != -1; start = pos + 1) {
-                    params.add(new PointerContext(Type.CHAR, true, context.getToken(), pos));
+                    params.add(new PointerContext(Type.CHAR, true, context.getToken(), new Value(pos)));
                 }
                 break;
             }
             case Type.CHAR: {
                 Integer pos;
                 for (; (pos = call.indexOf("%c", start)) != -1; start = pos + 1) {
-                    params.add(new PrimitiveContext(Type.CHAR, true, context.getToken(), pos));
+                    params.add(new PrimitiveContext(Type.CHAR, true, context.getToken(), new Value(pos)));
                 }
                 break;
             }

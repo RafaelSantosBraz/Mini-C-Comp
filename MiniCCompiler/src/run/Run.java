@@ -19,7 +19,6 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import parser.*;
 import preprocessor.PreProcessor;
-import semantic.SemanticTable;
 import semantic.SemanticVisitor;
 
 /**

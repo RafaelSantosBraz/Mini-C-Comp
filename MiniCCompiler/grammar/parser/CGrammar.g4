@@ -148,7 +148,7 @@ decl            : type ID                                                       
 
 declatrib       : type ID '=' expr                                              #declatribValueSimple
                 | type '*' ID '=' ADRESS? ID                                    #declatribValuePointer
-                | type ID '[' expr? ']' '=' '{' funcargs? '}'                   #declatribValueArrayList
+                | type ID '[' expr? ']' '=' '{' funcargs '}'                    #declatribValueArrayList
                 | CHAR ID '[' expr? ']' '=' STR                                 #declatribValueArrayString
                 ;
 
