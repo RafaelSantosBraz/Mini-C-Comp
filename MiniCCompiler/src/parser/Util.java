@@ -43,6 +43,58 @@ public class Util {
     public void setCurrentFuncName(String currentFuncName) {
         this.currentFuncName = currentFuncName;
     }
+   
+      
+    public Double getDoubleFromContext(Context c) {
+        if (c.getValue().getRealValue() != null) {
+            return ((Number) c.getValue().getRealValue()).doubleValue();
+        }
+        return 0.0;
+    }
+
+    public Context sumOp(Context c1, Context c2) {
+        Double n1 = getDoubleFromContext(c1);
+        Double n2 = getDoubleFromContext(c2);
+        Integer newType = toUpperType(c1, c2);
+        Boolean constant = (c1.getConstant() && c2.getConstant());
+        return new PrimitiveContext(newType, constant, c1.getToken(), new Value(doubleToType(newType, n1 + n2)));
+    }
+
+    public Context minusOp(Context c1, Context c2) {
+        Double n1 = getDoubleFromContext(c1);
+        Double n2 = getDoubleFromContext(c2);
+        Integer newType = toUpperType(c1, c2);
+        Boolean constant = (c1.getConstant() && c2.getConstant());
+        return new PrimitiveContext(newType, constant, c1.getToken(), new Value(doubleToType(newType, n1 - n2)));
+    }
+
+    public Context multOp(Context c1, Context c2) {
+        Double n1 = getDoubleFromContext(c1);
+        Double n2 = getDoubleFromContext(c2);
+        Integer newType = toUpperType(c1, c2);
+        Boolean constant = (c1.getConstant() && c2.getConstant());
+        return new PrimitiveContext(newType, constant, c1.getToken(), new Value(doubleToType(newType, n1 * n2)));
+    }
+    
+    public Context divOp(Context c1, Context c2) {
+        Double n1 = getDoubleFromContext(c1);
+        Double n2 = getDoubleFromContext(c2);
+        Integer newType = toUpperType(c1, c2);
+        Boolean constant = (c1.getConstant() && c2.getConstant());
+        return new PrimitiveContext(newType, constant, c1.getToken(), new Value(doubleToType(newType, n1 / n2)));
+    }
+    public Object doubleToType(Integer targetType, Double n) {
+        switch (targetType) {
+            case Type.INT: {
+                return n.intValue();
+            }
+            case Type.CHAR: {
+                return Character.toChars(n.intValue());
+            }
+        }
+        // o Double
+        return n;
+    }
 
     public Double stringDoubleConvertion(String n) {
         try {

@@ -34,7 +34,13 @@ public class PointerContext extends Context {
     
     public void addPointValueListFromContext(ArrayList<Context> args) {
         for (int c = 0; c < args.size(); c++) {
-            addPointValue(args.get(c), c);
+            addPointValue(args.get(c).getValue().getRealValue(), c);
+        }
+    }
+    
+     public void addPointValueListFromCharArray(char args[]) {
+        for (int c = 0; c < args.length; c++) {
+            addPointValue(args[c], c);
         }
     }
 }
