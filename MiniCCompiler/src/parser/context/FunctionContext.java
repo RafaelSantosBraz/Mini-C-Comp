@@ -7,13 +7,16 @@ package parser.context;
 
 import java.util.ArrayList;
 import org.antlr.v4.runtime.Token;
+import parser.CGrammarParser;
 import parser.Util;
 
 /**
  *
  * @author rafael
  */
-public class FunctionContext extends Context {
+public class FunctionContext extends Context implements Cloneable {
+
+    private CGrammarParser.FunctionContext treeNode;
 
     public FunctionContext(Integer returntype, Token token) {
         super(returntype, false, token, new Value(new ArrayList<Context>()));
@@ -21,6 +24,16 @@ public class FunctionContext extends Context {
 
     public FunctionContext(Integer returntype, Token token, ArrayList<Context> args) {
         super(returntype, false, token, new Value(args));
+    }
+
+    public FunctionContext(Integer returntype, Token token, CGrammarParser.FunctionContext treeNode) {
+        super(returntype, false, token, new Value(new ArrayList<Context>()));
+        this.treeNode = treeNode;
+    }
+
+    public FunctionContext(Integer returntype, Token token, ArrayList<Context> args, CGrammarParser.FunctionContext treeNode) {
+        super(returntype, false, token, new Value(args));
+        this.treeNode = treeNode;
     }
 
     // métodos para tratar funções
@@ -35,6 +48,23 @@ public class FunctionContext extends Context {
             }
         }
         return true;
+    }
+
+    @Override
+    public FunctionContext clone()  {
+        try {
+            return (FunctionContext) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            return null;
+        }
+    }
+
+    public CGrammarParser.FunctionContext getTreeNode() {
+        return treeNode;
+    }
+
+    public void setTreeNode(CGrammarParser.FunctionContext treeNode) {
+        this.treeNode = treeNode;
     }
 
 }

@@ -35,6 +35,7 @@ public class Util {
     //</editor-fold>    
 
     private String currentFuncName = null;
+    private Boolean executing = false;
 
     public String getCurrentFuncName() {
         return currentFuncName;
@@ -43,8 +44,17 @@ public class Util {
     public void setCurrentFuncName(String currentFuncName) {
         this.currentFuncName = currentFuncName;
     }
-   
-      
+
+    public Boolean getExecuting() {
+        return executing;
+    }
+
+    public void setExecuting(Boolean executing) {
+        this.executing = executing;
+    }
+
+    
+
     public Double getDoubleFromContext(Context c) {
         if (c.getValue().getRealValue() != null) {
             return ((Number) c.getValue().getRealValue()).doubleValue();
@@ -75,7 +85,7 @@ public class Util {
         Boolean constant = (c1.getConstant() && c2.getConstant());
         return new PrimitiveContext(newType, constant, c1.getToken(), new Value(doubleToType(newType, n1 * n2)));
     }
-    
+
     public Context divOp(Context c1, Context c2) {
         Double n1 = getDoubleFromContext(c1);
         Double n2 = getDoubleFromContext(c2);
@@ -83,6 +93,7 @@ public class Util {
         Boolean constant = (c1.getConstant() && c2.getConstant());
         return new PrimitiveContext(newType, constant, c1.getToken(), new Value(doubleToType(newType, n1 / n2)));
     }
+
     public Object doubleToType(Integer targetType, Double n) {
         switch (targetType) {
             case Type.INT: {
@@ -415,14 +426,6 @@ public class Util {
         return false;
     }
 
-//    public Boolean declareVar(String functionName, Context context) {
-//        if (!SemanticTable.getInstance().isThere(functionName)) {
-//            SemanticTable.getInstance().createTable(functionName);
-//            SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(functionName, context);
-//        }
-//        SemanticTable.getInstance().getTable(functionName).addSymbol(context.getToken().getText(), context);
-//        return true;
-//    }
     public Boolean declareVar(Context context) {
         if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(context.getToken().getText())) {
             ArrayList<Object> args = new ArrayList<>();

@@ -10,6 +10,7 @@ import parser.CGrammarBaseVisitor;
 import parser.CGrammarLexer;
 import parser.CGrammarParser;
 import parser.ErrorType;
+import parser.SymbolTable;
 import parser.Type;
 import parser.Util;
 import parser.context.Context;
@@ -17,6 +18,7 @@ import parser.context.FunctionContext;
 import parser.context.PointerContext;
 import parser.context.PrimitiveContext;
 import parser.context.Value;
+import semantic.SemanticTable;
 
 /**
  *
@@ -254,4 +256,35 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="function">
+    @Override
+    public Object visitFunction(CGrammarParser.FunctionContext ctx) {
+        if (Util.getInstance().getExecuting()) {
+            //FunctionContext func = ((FunctionContext) Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, true, ctx.ID().getSymbol()))).clone();
+            FunctionStack.getInstance().addTable(SemanticTable.getInstance().getTable(ctx.ID().getText()).clone());
+            if (ctx.cmd() != null) {
+                for (CGrammarParser.CmdContext t : ctx.cmd()) {
+                    if (t.getChild(0) instanceof CGrammarParser.RetrnContext) {
+                        return visit(t);
+                    }
+                    visit(t);
+                }
+            }
+            return null;
+        } else {
+            Context returnType = (Context) visit(ctx.returntype());
+            ArrayList<Context> params;
+            if (ctx.param() != null) {
+                params = (ArrayList<Context>) visit(ctx.param());
+            } else {
+                params = new ArrayList<>();
+            }
+            Util.getInstance().setCurrentFuncName(ctx.ID().getText());
+            FunctionContext func = new FunctionContext(returnType.getType(), ctx.ID().getSymbol(), params, ctx);
+            Util.getInstance().declareFuncInTable(ctx.ID().getText(), func);
+            Util.getInstance().declareMultVar(params);
+            return func;
+        }
+    }
+    //</editor-fold>
 }

@@ -12,8 +12,8 @@ import java.util.HashMap;
  *
  * @author rafael
  */
-public class SymbolTable {
-    
+public class SymbolTable implements Cloneable {
+
     private final HashMap<String, Context> memory;
 
     public SymbolTable() {
@@ -31,21 +31,17 @@ public class SymbolTable {
     public Context getSymbol(String varName) {
         return memory.get(varName);
     }
-    
-    public void deleteSymbol(String varName){
+
+    public void deleteSymbol(String varName) {
         memory.remove(varName);
     }
 
-//    public String dumpTable() {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("---Symbols---\n");
-//        for (Map.Entry<String, Number> e : memory.entrySet()) {
-//            Number aux = e.getValue();
-//            sb.append(String.format(" %s -> %f \n", e.getKey(), Util.typeConvertion(Util.getTokenType(aux), aux)));
-//        }
-//        sb.append("-------------\n");
-//        return sb.toString();
-//
-//    }
-
+    @Override
+    public SymbolTable clone() {
+        try {
+            return (SymbolTable) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            return null;
+        }
+    }
 }
