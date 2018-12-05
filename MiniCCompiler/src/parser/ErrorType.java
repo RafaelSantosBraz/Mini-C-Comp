@@ -27,5 +27,7 @@ public class ErrorType {
     public static final int PRINTF_ARGS_INSUFFICIENT = 13;
     public static final int SCANF_ARGS_DO_NOT_EXIST = 14;
     public static final int SCANF_ARGS_INSUFFICIENT = 15;
+    public static final int FUNC_WITHOUT_RETURN = 16;
+    public static final int MAIN_DOES_NOT_EXIST = 17;
 
 }

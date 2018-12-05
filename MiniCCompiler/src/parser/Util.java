@@ -53,8 +53,6 @@ public class Util {
         this.executing = executing;
     }
 
-    
-
     public Double getDoubleFromContext(Context c) {
         if (c.getValue().getRealValue() != null) {
             return ((Number) c.getValue().getRealValue()).doubleValue();
@@ -647,6 +645,25 @@ public class Util {
                         + realSize
                         + " parâmetros foram informados."
                 );
+                break;
+            }
+            case ErrorType.FUNC_WITHOUT_RETURN: {
+                Context func = (Context) args.get(0);
+                Context type = (Context) args.get(1);
+                System.err.println("A função '"
+                        + func.getToken().getText()
+                        + "' em ["
+                        + func.getToken().getLine()
+                        + ":"
+                        + func.getToken().getCharPositionInLine()
+                        + "] esperava retornar '"
+                        + Type.getLiteralTypeName(type.getType())
+                        + "', mas não foi encontrado um comando 'return' válido."
+                );
+                break;
+            }
+            case ErrorType.MAIN_DOES_NOT_EXIST: {
+                System.err.println("Não foi encontrada a função 'main', o ponto de entrada obrigatório de execução.");
                 break;
             }
         }

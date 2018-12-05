@@ -6,6 +6,7 @@
 package semantic;
 
 import java.util.ArrayList;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import parser.*;
 import parser.context.Context;
 import parser.context.FunctionContext;
@@ -403,12 +404,22 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         Util.getInstance().declareFuncInTable(ctx.ID().getText(), new FunctionContext(returnType.getType(), ctx.ID().getSymbol(), params));
         Util.getInstance().declareMultVar(params);
         if (ctx.cmd() != null) {
-            Boolean checked = true;
+            Boolean checked = true, isRtnThere = false;
             for (CGrammarParser.CmdContext t : ctx.cmd()) {
+                if (t.getChild(0) instanceof CGrammarParser.RetrnContext) {
+                    isRtnThere = true;
+                }
                 if ((Context) visit(t) == null) {
                     checked = false;
                     break;
                 }
+            }
+            if (!isRtnThere && returnType.getType() != Type.VOID) {
+                ArrayList<Object> args = new ArrayList<>();
+                args.add(auxVar);
+                args.add(returnType);
+                Util.getInstance().error(ErrorType.FUNC_WITHOUT_RETURN, args);
+                return null;
             }
             if (!checked) {
                 SemanticTable.getInstance().getGlobalSymbolTable().deleteSymbol(ctx.ID().getText());

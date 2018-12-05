@@ -7,6 +7,7 @@ package run;
 
 import java.awt.HeadlessException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -19,6 +20,7 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import parser.*;
 import preprocessor.PreProcessor;
+import semantic.SemanticTable;
 import semantic.SemanticVisitor;
 
 /**
@@ -53,8 +55,10 @@ public class Run {
         //System.out.println(SymbolTable.getInstance().dumpTable());
         SemanticVisitor pv = new SemanticVisitor();
         pv.visit(prog);
-        //SemanticTable t = SemanticTable.getInstance();
-        //int i = t.countTables();
+        if (SemanticTable.getInstance().getTable("main") == null) {
+            ArrayList<Object> params = new ArrayList<>();
+            Util.getInstance().error(ErrorType.MAIN_DOES_NOT_EXIST, params);
+        }
     }
 
     public static void exibir(ParseTree tree) {
