@@ -13,7 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import parser.ErrorType;
-import parser.Util;
+import util.Util;
 
 /**
  *

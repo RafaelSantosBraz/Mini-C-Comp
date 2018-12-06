@@ -20,8 +20,9 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import parser.*;
 import preprocessor.PreProcessor;
-import semantic.SemanticTable;
 import semantic.SemanticVisitor;
+import util.FuncTable;
+import util.Util;
 
 /**
  *
@@ -55,7 +56,7 @@ public class Run {
         //System.out.println(SymbolTable.getInstance().dumpTable());
         SemanticVisitor pv = new SemanticVisitor();
         pv.visit(prog);
-        if (SemanticTable.getInstance().getTable("main") == null) {
+        if (FuncTable.getInstance().getFunc("main") == null) {
             ArrayList<Object> params = new ArrayList<>();
             Util.getInstance().error(ErrorType.MAIN_DOES_NOT_EXIST, params);
         }

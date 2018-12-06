@@ -17,7 +17,6 @@ import parser.context.FunctionContext;
 import parser.context.PointerContext;
 import parser.context.PrimitiveContext;
 import util.CallStack;
-import util.FuncTable;
 
 /**
  *

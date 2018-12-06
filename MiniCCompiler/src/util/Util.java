@@ -8,7 +8,6 @@ package util;
 import java.util.ArrayList;
 import java.util.Objects;
 import org.antlr.v4.runtime.Token;
-import parser.CGrammarParser;
 import parser.ErrorType;
 import parser.Type;
 import parser.context.Context;
@@ -17,7 +16,6 @@ import parser.context.PointerContext;
 import parser.context.PointerPointerContext;
 import parser.context.PrimitiveContext;
 import parser.context.Value;
-import semantic.SemanticTable;
 
 /**
  *
@@ -76,7 +74,7 @@ public class Util {
         if (CallStack.getInstance().isthere(context.getToken().getText())) {
             ArrayList<Object> args = new ArrayList<>();
             args.add(context);
-            args.add(SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(context.getToken().getText()));
+            args.add(CallStack.getInstance().getVar(context.getToken().getText()));
             error(ErrorType.SYMB_ALREADY_EXISTS, args);
             return false;
         }

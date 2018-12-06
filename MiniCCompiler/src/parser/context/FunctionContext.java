@@ -8,7 +8,7 @@ package parser.context;
 import java.util.ArrayList;
 import org.antlr.v4.runtime.Token;
 import parser.CGrammarParser;
-import parser.Util;
+import util.Util;
 
 /**
  *
