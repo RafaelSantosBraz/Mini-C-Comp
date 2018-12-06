@@ -6,7 +6,9 @@
 package interpreter;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 import parser.CGrammarBaseVisitor;
+import parser.CGrammarLexer;
 import parser.CGrammarParser;
 import parser.ErrorType;
 import parser.Type;
@@ -396,8 +398,202 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
                 return result;
             }
             CallStack.getInstance().deleteCall();
-        } while ((Boolean) visit(ctx.cond()));       
+        } while ((Boolean) visit(ctx.cond()));
         return new PrimitiveContext(Type.INT, true, ctx.DO().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="whilee">
+    @Override
+    public Object visitWhilee(CGrammarParser.WhileeContext ctx) {
+        while ((Boolean) visit(ctx.cond())) {
+            CallStack.getInstance().setCall(new Call(false));
+            BlockResult result = (BlockResult) visit(ctx.block());
+            if (result.isBecauseOfReturn()) {
+                CallStack.getInstance().deleteCall();
+                return result;
+            }
+            CallStack.getInstance().deleteCall();
+        }
+        return new PrimitiveContext(Type.INT, true, ctx.WHILE().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="swtstm">
+    @Override
+    public Object visitSwtstm(CGrammarParser.SwtstmContext ctx) {
+        Context exprContext = (Context) visit(ctx.expr());
+        for (CGrammarParser.CasesContext t : ctx.cases()) {
+            if (Util.getInstance().stringIntConvertion(t.getChild(1).getText()) == (Integer) exprContext.getValue().getRealValue()) {
+                BlockResult result = (BlockResult) visit(t);
+                if (result.isBecauseOfReturn()) {
+                    CallStack.getInstance().deleteCall();
+                    return result;
+                }
+            }
+        }
+        return new PrimitiveContext(Type.INT, true, ctx.SWITCH().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="cases">
+    @Override
+    public Object visitCases(CGrammarParser.CasesContext ctx) {
+        CallStack.getInstance().setCall(new Call(false));
+        for (CGrammarParser.CmdContext t : ctx.cmd()) {
+            Object result = visit(t);
+            if (result instanceof BlockResult && ((BlockResult) result).isBecauseOfReturn()) {
+                return result;
+            }
+        }
+        CallStack.getInstance().deleteCall();
+        return new PrimitiveContext(Type.INT, true, ctx.CASE().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="ifstm">
+    @Override
+    public Object visitIfStm(CGrammarParser.IfStmContext ctx) {
+        if ((Boolean) visit(ctx.cond())) {
+            BlockResult result = (BlockResult) visit(ctx.block());
+            if (result.isBecauseOfReturn()) {
+                CallStack.getInstance().deleteCall();
+                return result;
+            }
+        }
+        return new PrimitiveContext(Type.INT, true, ctx.IF().getSymbol());
+    }
+
+    @Override
+    public Object visitIfStmElse(CGrammarParser.IfStmElseContext ctx) {
+        if ((Boolean) visit(ctx.cond())) {
+            BlockResult result = (BlockResult) visit(ctx.block(0));
+            if (result.isBecauseOfReturn()) {
+                CallStack.getInstance().deleteCall();
+                return result;
+            }
+        } else {
+            BlockResult result = (BlockResult) visit(ctx.block(1));
+            if (result.isBecauseOfReturn()) {
+                CallStack.getInstance().deleteCall();
+                return result;
+            }
+        }
+        return new PrimitiveContext(Type.INT, true, ctx.IF().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="block">
+    @Override
+    public Object visitBlock(CGrammarParser.BlockContext ctx) {
+        CallStack.getInstance().setCall(new Call(false));
+        for (CGrammarParser.CmdContext t : ctx.cmd()) {
+            Object result = visit(t);
+            if (result instanceof BlockResult && ((BlockResult) result).isBecauseOfReturn()) {
+                return result;
+            }
+        }
+        CallStack.getInstance().deleteCall();
+        return new PrimitiveContext(Type.INT, true, ctx.getToken(CGrammarLexer.OPB, 0).getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="funccallact">
+    @Override
+    public Object visitFunccallact(CGrammarParser.FunccallactContext ctx) {
+        FunctionContext func = (FunctionContext) Util.getInstance().getFuncFromTable(new PrimitiveContext(Type.FUNCTION_MARK, false, ctx.ID().getSymbol()));
+        ArrayList<Context> params;
+        if (ctx.funcargs() != null) {
+            params = (ArrayList<Context>) visit(ctx.funcargs());
+        } else {
+            params = new ArrayList<>();
+        }
+        Util.getInstance().putFuncInStack(true);
+        Util.getInstance().declareMultVar(params);
+        Object result = visit(func.getTreeNode());
+        CallStack.getInstance().deleteCall();
+        return result;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="retrn">
+    @Override
+    public Object visitRetrn(CGrammarParser.RetrnContext ctx) {
+        return visit(ctx.expr());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="scan">
+    @Override
+    public Object visitScan(CGrammarParser.ScanContext ctx) {
+        ArrayList<Context> params = Util.getInstance().extractScanfParams(new PointerContext(Type.POINTER_CHAR, true, ctx.STR().getSymbol()));
+        ArrayList<Context> realArgs = (ArrayList<Context>) visit(ctx.scanargs());
+        if (params.isEmpty()) {
+            return new FunctionContext(Type.FUNCTION_MARK, ctx.SCANF().getSymbol());
+        }
+        Scanner s = new Scanner(System.in);
+        for (Context t : params) {
+            Object input = null;
+            switch (t.getType()) {
+                case Type.POINTER_INT: {
+                    //Integer n = Util.getInstance().stringIntConvertion(s.nextLine());
+                    input = s.nextInt();
+                    ((PointerContext) realArgs.get(params.indexOf(t))).addPointValue(input, 0);
+                    break;
+                }
+                case Type.POINTER_DOUBLE: {
+                    input = s.nextDouble();
+                    ((PointerContext) realArgs.get(params.indexOf(t))).addPointValue(input, 0);
+                    break;
+                }
+                case Type.POINTER_CHAR: {
+                    input = s.nextLine();
+                    ((PointerContext) realArgs.get(params.indexOf(t))).addPointValueListFromCharArray(((String) input).toCharArray());
+                    break;
+                }
+            }
+        }
+        return new PrimitiveContext(Type.INT, true, ctx.SCANF().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="scanargs">
+    @Override
+    public Object visitScanargsCompose(CGrammarParser.ScanargsComposeContext ctx) {
+        ArrayList<Context> args = new ArrayList<>();
+        Context scanArgContext = (Context) visit(ctx.scanargstype());
+        args.add(scanArgContext);
+        ArrayList<Context> argsParams = (ArrayList<Context>) visit(ctx.scanargs());
+        args.addAll(argsParams);
+        return args;
+    }
+
+    @Override
+    public Object visitScanargsSingle(CGrammarParser.ScanargsSingleContext ctx) {
+        ArrayList<Context> args = new ArrayList<>();
+        Context scanArgContext = (Context) visit(ctx.scanargstype());
+        args.add(scanArgContext);
+        return args;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="scanargstype">
+    @Override
+    public Object visitScanargstypeAddress(CGrammarParser.ScanargstypeAddressContext ctx) {
+        Context var = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        return Util.getInstance().promoteContextType(var);
+    }
+
+    @Override
+    public Object visitScanargstypeId(CGrammarParser.ScanargstypeIdContext ctx) {
+        return Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+    }
+
+    @Override
+    public Object visitScanargstypeAddressArray(CGrammarParser.ScanargstypeAddressArrayContext ctx) {
+        Context exprContext = (Context) visit(ctx.expr());
+        Context var = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        return Util.getInstance().createCorrectContextInstance(var, ctx.ID().getSymbol());
     }
     //</editor-fold>
 }

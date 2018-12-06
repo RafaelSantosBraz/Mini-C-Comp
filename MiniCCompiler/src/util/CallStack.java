@@ -74,4 +74,10 @@ public class CallStack {
     public Call deleteCall(){
         return stack.pop();
     }
+    
+    public void reset(){
+        Call global = stack.get(0);
+        stack.clear();
+        stack.push(global);
+    }
 }

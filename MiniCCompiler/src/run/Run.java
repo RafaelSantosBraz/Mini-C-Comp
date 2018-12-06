@@ -5,6 +5,7 @@
  */
 package run;
 
+import interpreter.InterpreterVisitor;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,6 +64,10 @@ public class Run {
         if (FuncTable.getInstance().getFunc("main") == null) {
             ArrayList<Object> params = new ArrayList<>();
             Util.getInstance().error(ErrorType.MAIN_DOES_NOT_EXIST, params);
+        } else {
+            CallStack.getInstance().reset();            
+            InterpreterVisitor interpreter = new InterpreterVisitor();
+            interpreter.visit(FuncTable.getInstance().getFunc("main").getTreeNode());
         }
     }
 
