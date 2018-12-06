@@ -3,12 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package parser;
+package util;
 
-import interpreter.FunctionStack;
 import java.util.ArrayList;
 import java.util.Objects;
 import org.antlr.v4.runtime.Token;
+import parser.CGrammarParser;
+import parser.ErrorType;
+import parser.Type;
 import parser.context.Context;
 import parser.context.FunctionContext;
 import parser.context.PointerContext;
@@ -18,9 +20,8 @@ import parser.context.Value;
 import semantic.SemanticTable;
 
 /**
- * FACADE?
  *
- * @author wellington
+ * @author rafael
  */
 public class Util {
 
@@ -35,28 +36,52 @@ public class Util {
     }
     //</editor-fold>    
 
-    private String currentFuncName = null;
-    private Boolean executing = false;
-
-    public String getCurrentFuncName() {
-        return currentFuncName;
+    public Context getFuncFromTable(Context c) {
+        if (!FuncTable.getInstance().isThere(c.getToken().getText())) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(c);
+            error(ErrorType.SYMB_DOES_NOT_EXIT, args);
+            return null;
+        }
+        return FuncTable.getInstance().getFunc(c.getToken().getText());
+    }
+    
+    public void putFuncInStack(Context func, boolean isLocked) {
+        CallStack.getInstance().setCall(new Call(isLocked));
     }
 
-    public void setCurrentFuncName(String currentFuncName) {
-        this.currentFuncName = currentFuncName;
+    public boolean declareFunction(FunctionContext func) {
+        if (FuncTable.getInstance().isThere(func.getToken().getText())) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(func);
+            args.add(FuncTable.getInstance().getFunc(func.getToken().getText()));
+            error(ErrorType.SYMB_ALREADY_EXISTS, args);
+            return false;
+        }
+        FuncTable.getInstance().addFunc(func.getToken().getText(), func);
+        return true;
     }
 
-    public Boolean getExecuting() {
-        return executing;
+    public Context getVar(Context c) {
+        if (!CallStack.getInstance().isthere(c.getToken().getText())) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(c);
+            error(ErrorType.SYMB_DOES_NOT_EXIT, args);
+            return null;
+        }
+        return CallStack.getInstance().getVar(c.getToken().getText());
     }
 
-    public void setExecuting(Boolean executing) {
-        this.executing = executing;
-    }
-
-    public void declareVarStack(Context context) {
-        SymbolTable table = FunctionStack.getInstance().getTable();
-        table.addSymbol(context.getToken().getText(), context);
+    public boolean declareVar(Context context) {
+        if (CallStack.getInstance().isthere(context.getToken().getText())) {
+            ArrayList<Object> args = new ArrayList<>();
+            args.add(context);
+            args.add(SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(context.getToken().getText()));
+            error(ErrorType.SYMB_ALREADY_EXISTS, args);
+            return false;
+        }
+        CallStack.getInstance().getCall().addVar(context.getToken().getText(), context);
+        return true;
     }
 
     public Double getDoubleFromContext(Context c) {
@@ -258,29 +283,6 @@ public class Util {
         return null;
     }
 
-    public Boolean doesGlobalContextExist(Context context) {
-        return SemanticTable.getInstance().getGlobalSymbolTable().isThere(context.getToken().getText());
-    }
-
-    public Context getContextFromTable(Context var) {
-        if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(var.getToken().getText())) {
-            return SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(var.getToken().getText());
-        }
-        if (currentFuncName == null) {
-            ArrayList<Object> args = new ArrayList<>();
-            args.add(var);
-            error(ErrorType.SYMB_DOES_NOT_EXIT, args);
-            return null;
-        }
-        if (SemanticTable.getInstance().getTable(currentFuncName).isThere(var.getToken().getText())) {
-            return SemanticTable.getInstance().getTable(currentFuncName).getSymbol(var.getToken().getText());
-        }
-        ArrayList<Object> args = new ArrayList<>();
-        args.add(var);
-        error(ErrorType.SYMB_DOES_NOT_EXIT, args);
-        return null;
-    }
-
     public Integer toUpperType(Context type1, Context type2) {
         if (MathOpCompatibilityCheck(type1, type2)) {
             switch (type1.getType()) {
@@ -415,42 +417,6 @@ public class Util {
             return true;
         }
         return false;
-    }
-
-    public Boolean declareFuncInTable(String functionName, Context context) {
-        if (!SemanticTable.getInstance().isThere(functionName)) {
-            SemanticTable.getInstance().createTable(functionName);
-            SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(functionName, context);
-            return true;
-        }
-        ArrayList<Object> args = new ArrayList<>();
-        args.add(context);
-        args.add(SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(context.getToken().getText()));
-        error(ErrorType.SYMB_ALREADY_EXISTS, args);
-        return false;
-    }
-
-    public Boolean declareVar(Context context) {
-        if (SemanticTable.getInstance().getGlobalSymbolTable().isThere(context.getToken().getText())) {
-            ArrayList<Object> args = new ArrayList<>();
-            args.add(context);
-            args.add(SemanticTable.getInstance().getGlobalSymbolTable().getSymbol(context.getToken().getText()));
-            error(ErrorType.SYMB_ALREADY_EXISTS, args);
-            return false;
-        }
-        if (currentFuncName == null) {
-            SemanticTable.getInstance().getGlobalSymbolTable().addSymbol(context.getToken().getText(), context);
-            return true;
-        }
-        if (SemanticTable.getInstance().getTable(currentFuncName).isThere(context.getToken().getText())) {
-            ArrayList<Object> args = new ArrayList<>();
-            args.add(context);
-            args.add(SemanticTable.getInstance().getTable(currentFuncName).getSymbol(context.getToken().getText()));
-            error(ErrorType.SYMB_ALREADY_EXISTS, args);
-            return false;
-        }
-        SemanticTable.getInstance().getTable(currentFuncName).addSymbol(context.getToken().getText(), context);
-        return true;
     }
 
     public void error(Integer errorType, ArrayList<Object> args) {
