@@ -21,6 +21,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import parser.*;
 import preprocessor.PreProcessor;
 import semantic.SemanticVisitor;
+import util.Call;
+import util.CallStack;
 import util.FuncTable;
 import util.Util;
 
@@ -55,6 +57,8 @@ public class Run {
         showParseTreeFrame(prog, parser);
         //System.out.println(SymbolTable.getInstance().dumpTable());
         SemanticVisitor pv = new SemanticVisitor();
+        // base da pilha -> tabela de símbolos global
+        CallStack.getInstance().setCall(new Call(true));
         pv.visit(prog);
         if (FuncTable.getInstance().getFunc("main") == null) {
             ArrayList<Object> params = new ArrayList<>();

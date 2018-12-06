@@ -8,12 +8,18 @@ package interpreter;
 import java.util.ArrayList;
 import parser.CGrammarBaseVisitor;
 import parser.CGrammarParser;
+import parser.ErrorType;
 import parser.Type;
 import parser.context.Context;
+import parser.context.FunctionContext;
 import util.Util;
 import parser.context.PointerContext;
 import parser.context.PrimitiveContext;
 import parser.context.Value;
+import util.BlockResult;
+import util.Call;
+import util.CallStack;
+import util.FuncTable;
 
 /**
  *
@@ -24,7 +30,6 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     //<editor-fold defaultstate="collapsed" desc="global">
     @Override
     public Object visitGlobal(CGrammarParser.GlobalContext ctx) {
-        Util.getInstance().setCurrentFuncName(null);
         Util.getInstance().declareVar((Context) visit(ctx.decl()));
         return null;
     }
@@ -78,14 +83,14 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     @Override
     public Object visitDeclatribValuePointer(CGrammarParser.DeclatribValuePointerContext ctx) {
         Context typeContext = (Context) visit(ctx.type());
-        Context id = Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID(1).getSymbol()));
+        Context id = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID(1).getSymbol()));
         if (ctx.ADRESS() != null) {
             PointerContext p = new PointerContext(Type.getIntTypeForPointer(typeContext.getType()), false, ctx.ID(0).getSymbol());
             p.addPointValue(id.getValue().getRealValue(), 0);
             return p;
         }
         return new PointerContext(Type.getIntTypeForPointer(typeContext.getType()), false, ctx.ID(0).getSymbol(), id.getValue());
-    }    
+    }
 
     @Override
     public Object visitDeclatribValueArrayString(CGrammarParser.DeclatribValueArrayStringContext ctx) {
@@ -217,23 +222,23 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     //<editor-fold defaultstate="collapsed" desc="downfact">
     @Override
     public Object visitDownfactId(CGrammarParser.DownfactIdContext ctx) {
-        return Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        return Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
     }
 
     @Override
     public Object visitDownfactAdress(CGrammarParser.DownfactAdressContext ctx) {
-        return Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        return Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
     }
 
     @Override
     public Object visitDownfactContent(CGrammarParser.DownfactContentContext ctx) {
-        return ((PointerContext) Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()))).getPointValue(0);
+        return ((PointerContext) Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()))).getPointValue(0);
     }
 
     @Override
     public Object visitDownfactArray(CGrammarParser.DownfactArrayContext ctx) {
         Context exprContext = (Context) visit(ctx.expr());
-        return ((PointerContext) Util.getInstance().getContextFromTable(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()))).getPointValue(((Number) exprContext.getValue().getRealValue()).intValue());
+        return ((PointerContext) Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()))).getPointValue(((Number) exprContext.getValue().getRealValue()).intValue());
     }
 
     @Override
@@ -241,6 +246,13 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         return visit(ctx.expr());
     }
     //</editor-fold>    
+
+    //<editor-fold defaultstate="collapsed" desc="function">
+    @Override
+    public Object visitFunction(CGrammarParser.FunctionContext ctx) {
+        return visit(ctx.block());
+    }
+    //</editor-fold>   
 
     //<editor-fold defaultstate="collapsed" desc="param">
     @Override
@@ -298,7 +310,7 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     @Override
     public Object visitCmdDecl(CGrammarParser.CmdDeclContext ctx) {
         Context c = (Context) visit(ctx.decl());
-        Util.getInstance().declareVarStack(c);
+        Util.getInstance().declareVar(c);
         return c;
     }
 
@@ -341,11 +353,51 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     //<editor-fold defaultstate="collapsed" desc="forr">
     @Override
     public Object visitForr(CGrammarParser.ForrContext ctx) {
-        Context initContext = (Context) visit(ctx.forinit());
-        Context condContext = (Context) visit(ctx.cond());
-        Context atribContext = (Context) visit(ctx.atrib());
-        Context blockContext = (Context) visit(ctx.block());
-        return condContext;
+        CallStack.getInstance().setCall(new Call(false));
+        visit(ctx.forinit());
+        while ((Boolean) visit(ctx.cond())) {
+            CallStack.getInstance().setCall(new Call(false));
+            BlockResult result = (BlockResult) visit(ctx.block());
+            if (result.isBecauseOfReturn()) {
+                CallStack.getInstance().deleteCall();
+                CallStack.getInstance().deleteCall();
+                return result;
+            }
+            visit(ctx.atrib());
+            CallStack.getInstance().deleteCall();
+        }
+        CallStack.getInstance().deleteCall();
+        return new PrimitiveContext(Type.INT, true, ctx.FOR().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="forinit">
+    @Override
+    public Object visitForAtrib(CGrammarParser.ForAtribContext ctx) {
+        return visit(ctx.atrib());
+    }
+
+    @Override
+    public Object visitForDeclatrib(CGrammarParser.ForDeclatribContext ctx) {
+        Context var = (Context) visit(ctx.declatrib());
+        Util.getInstance().declareVar(var);
+        return var;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="dowhile">
+    @Override
+    public Object visitDowhile(CGrammarParser.DowhileContext ctx) {
+        do {
+            CallStack.getInstance().setCall(new Call(false));
+            BlockResult result = (BlockResult) visit(ctx.block());
+            if (result.isBecauseOfReturn()) {
+                CallStack.getInstance().deleteCall();
+                return result;
+            }
+            CallStack.getInstance().deleteCall();
+        } while ((Boolean) visit(ctx.cond()));       
+        return new PrimitiveContext(Type.INT, true, ctx.DO().getSymbol());
     }
     //</editor-fold>
 }

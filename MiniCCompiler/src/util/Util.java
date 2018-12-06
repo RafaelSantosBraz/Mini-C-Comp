@@ -44,7 +44,7 @@ public class Util {
         return FuncTable.getInstance().getFunc(c.getToken().getText());
     }
     
-    public void putFuncInStack(Context func, boolean isLocked) {
+    public void putFuncInStack(boolean isLocked) {
         CallStack.getInstance().setCall(new Call(isLocked));
     }
 
@@ -60,6 +60,10 @@ public class Util {
         return true;
     }
 
+    public boolean varIsThere(Context c){
+        return CallStack.getInstance().isthere(c.getToken().getText());                   
+    }
+    
     public Context getVar(Context c) {
         if (!CallStack.getInstance().isthere(c.getToken().getText())) {
             ArrayList<Object> args = new ArrayList<>();
