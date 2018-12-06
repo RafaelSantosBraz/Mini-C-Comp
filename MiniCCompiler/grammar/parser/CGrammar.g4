@@ -14,11 +14,7 @@ num             : NUMINT                                                        
                 | NDOUBLE                                                       #numDouble
                 ;
 
-function        : returntype ID '(' param? ')' '{' cmd* '}'
-                ;
-
-returntype      : type                                                          #returnType
-                | VOID                                                          #returnVoid
+function        : type ID '(' param? ')' block
                 ;
 
 type            : INT                                                           #typeInt
@@ -26,7 +22,7 @@ type            : INT                                                           
                 | CHAR                                                          #typeChar
                 ;
 
-param           : paramcomplx  ',' param                                        #paramCompose
+param           : paramcomplx ',' param                                         #paramCompose
                 | paramcomplx                                                   #paramSingle
                 ;
 
@@ -35,8 +31,7 @@ paramcomplx     : type ID                                                       
                 | type ID '[' ']'                                               #paramArray
                 ;
 
-block           : cmd?                                                          #blockSingle
-                | OPB cmd* CLB                                                  #blockCompose
+block           : '{' cmd+ '}'                                                  
                 ;
 
 cmd             : atrib EOL                                                     #cmdAtrib
@@ -64,15 +59,10 @@ dowhile         : DO block WHILE '(' cond ')'
 
 whilee          : WHILE '(' cond ')' block;
 
-swtstm          : SWITCH '(' expr ')' '{' cases* dfault?'}'  
+swtstm          : SWITCH '(' expr ')' '{' cases+ '}'  
                 ;
 
-cases           : CASE NUMINT ':' cmd* BREAK?                                   #caseSimple
-                | CASE NUMINT ':' '{' cmd* BREAK? '}'                           #caseBlock
-                ;
-
-dfault          : DEFAULT ':' cmd* BREAK?                                       #defaultSimple
-                | DEFAULT ':' '{' cmd* BREAK? '}'                               #defaultBlock
+cases           : CASE NUMINT ':' '{' cmd+ BREAK EOL '}'                        
                 ;
 
 retrn           : RETURN expr 
@@ -148,8 +138,7 @@ decl            : type ID                                                       
 
 declatrib       : type ID '=' expr                                              #declatribValueSimple
                 | type '*' ID '=' ADRESS? ID                                    #declatribValuePointer
-                | type ID '[' expr? ']' '=' '{' funcargs '}'                    #declatribValueArrayList
-                | CHAR ID '[' expr? ']' '=' STR                                 #declatribValueArrayString
+                | CHAR ID '[' ']' '=' STR                                       #declatribValueArrayString
                 ;
 
 ifstm           : IF '(' cond ')' block                                         #ifStm
@@ -164,9 +153,7 @@ cdand           : cdand AND cndts                                               
                 | cndts                                                         #cdandCndts
                 ;
 
-cndts           : expr                                                          #cndtsExpr
-                | expr relop expr                                               #cndtsRelop                
-                | '!' cndts                                                     #cndtsNotExprWithout                
+cndts           : expr relop expr                                               #cndtsRelop                                            
                 | '(' cond ')'                                                  #cndtsCond
                 ;
 

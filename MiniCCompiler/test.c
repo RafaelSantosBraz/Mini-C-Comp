@@ -1,12 +1,13 @@
 int soma(int a, int b){
     int resultado;
     resultado = a + b;
+    return resultado;
 }
 
-int m(){
-    return 0;
+int main(){
     int x = 2;
     int *y = &x;
     char w = 'a';
+    return 0;
 }
 

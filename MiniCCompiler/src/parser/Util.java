@@ -5,6 +5,7 @@
  */
 package parser;
 
+import interpreter.FunctionStack;
 import java.util.ArrayList;
 import java.util.Objects;
 import org.antlr.v4.runtime.Token;
@@ -53,6 +54,11 @@ public class Util {
         this.executing = executing;
     }
 
+     public void declareVarStack(Context context) {
+         SymbolTable table = FunctionStack.getInstance().getTable();
+         table.addSymbol(context.getToken().getText(), context);         
+    }
+    
     public Double getDoubleFromContext(Context c) {
         if (c.getValue().getRealValue() != null) {
             return ((Number) c.getValue().getRealValue()).doubleValue();

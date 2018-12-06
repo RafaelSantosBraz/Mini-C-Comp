@@ -7,10 +7,7 @@ package interpreter;
 
 import java.util.ArrayList;
 import parser.CGrammarBaseVisitor;
-import parser.CGrammarLexer;
 import parser.CGrammarParser;
-import parser.ErrorType;
-import parser.SymbolTable;
 import parser.Type;
 import parser.Util;
 import parser.context.Context;
@@ -285,6 +282,125 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
             Util.getInstance().declareMultVar(params);
             return func;
         }
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="returntype">
+    @Override
+    public Object visitReturnType(CGrammarParser.ReturnTypeContext ctx) {
+        return visit(ctx.type());
+    }
+
+    @Override
+    public Object visitReturnVoid(CGrammarParser.ReturnVoidContext ctx) {
+        return new PrimitiveContext(Type.VOID, true, ctx.VOID().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="param">
+    @Override
+    public Object visitParamCompose(CGrammarParser.ParamComposeContext ctx) {
+        ArrayList<Context> args = new ArrayList<>();
+        args.add((Context) visit(ctx.paramcomplx()));
+        args.addAll((ArrayList<Context>) visit(ctx.param()));
+        return args;
+    }
+
+    @Override
+    public Object visitParamSingle(CGrammarParser.ParamSingleContext ctx) {
+        ArrayList<Context> args = new ArrayList<>();
+        args.add((Context) visit(ctx.paramcomplx()));
+        return args;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="paramcomplx">
+    @Override
+    public Object visitParamByValue(CGrammarParser.ParamByValueContext ctx) {
+        Context typeContext = (Context) visit(ctx.type());
+        return new PrimitiveContext(typeContext.getType(), typeContext.getConstant(), ctx.ID().getSymbol());
+    }
+
+    @Override
+    public Object visitParamByPointer(CGrammarParser.ParamByPointerContext ctx) {
+        Context typeContext = (Context) visit(ctx.type());
+        return new PointerContext(Type.getIntTypeForPointer(typeContext.getType()), typeContext.getConstant(), ctx.ID().getSymbol());
+    }
+
+    @Override
+    public Object visitParamArray(CGrammarParser.ParamArrayContext ctx) {
+        Context typeContext = (Context) visit(ctx.type());
+        return new PointerContext(Type.getIntTypeForPointer(typeContext.getType()), typeContext.getConstant(), ctx.ID().getSymbol());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="cmd">
+    @Override
+    public Object visitCmdAtrib(CGrammarParser.CmdAtribContext ctx) {
+        return visit(ctx.atrib());
+    }
+
+    @Override
+    public Object visitCmdWrite(CGrammarParser.CmdWriteContext ctx) {
+        return visit(ctx.print());
+    }
+
+    @Override
+    public Object visitCmdRead(CGrammarParser.CmdReadContext ctx) {
+        return visit(ctx.scan());
+    }
+
+    @Override
+    public Object visitCmdDecl(CGrammarParser.CmdDeclContext ctx) {
+        Context c = (Context) visit(ctx.decl());
+        Util.getInstance().declareVarStack(c);
+        return c;
+    }
+
+    @Override
+    public Object visitCmdReturn(CGrammarParser.CmdReturnContext ctx) {
+        return visit(ctx.retrn());
+    }
+
+    @Override
+    public Object visitCmdFunccall(CGrammarParser.CmdFunccallContext ctx) {
+        return visit(ctx.funccallact());
+    }
+
+    @Override
+    public Object visitCmdIf(CGrammarParser.CmdIfContext ctx) {
+        return visit(ctx.ifstm());
+    }
+
+    @Override
+    public Object visitCmdswitch(CGrammarParser.CmdswitchContext ctx) {
+        return visit(ctx.swtstm());
+    }
+
+    @Override
+    public Object visitCmdWhile(CGrammarParser.CmdWhileContext ctx) {
+        return visit(ctx.whilee());
+    }
+
+    @Override
+    public Object visitCmdDoWhile(CGrammarParser.CmdDoWhileContext ctx) {
+        return visit(ctx.dowhile());
+    }
+
+    @Override
+    public Object visitCmdFor(CGrammarParser.CmdForContext ctx) {
+        return visit(ctx.forr());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="forr">
+    @Override
+    public Object visitForr(CGrammarParser.ForrContext ctx) {
+        Context initContext = (Context) visit(ctx.forinit());
+        Context condContext = (Context) visit(ctx.cond());
+        Context atribContext = (Context) visit(ctx.atrib());
+        Context blockContext = (Context) visit(ctx.block());
+        return condContext;
     }
     //</editor-fold>
 }
