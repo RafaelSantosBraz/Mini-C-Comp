@@ -27,6 +27,8 @@ import util.CallStack;
  */
 public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
 
+    private CallStack c = CallStack.getInstance();
+
     //<editor-fold defaultstate="collapsed" desc="global">
     @Override
     public Object visitGlobal(CGrammarParser.GlobalContext ctx) {
@@ -76,8 +78,11 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     @Override
     public Object visitDeclatribValueSimple(CGrammarParser.DeclatribValueSimpleContext ctx) {
         Context typeContext = (Context) visit(ctx.type());
-        Context exprContext = (Context) visit(ctx.expr());
-        return new PrimitiveContext(typeContext.getType(), false, ctx.ID().getSymbol(), new Value(exprContext.getValue().getRealValue()));
+        Object exprContext = visit(ctx.expr());
+        if (exprContext instanceof BlockResult) {
+            exprContext = ((BlockResult) exprContext).getResult();
+        }
+        return new PrimitiveContext(typeContext.getType(), false, ctx.ID().getSymbol(), new Value(((Context) exprContext).getValue().getRealValue()));
     }
 
     @Override
@@ -86,10 +91,14 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         Context id = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID(1).getSymbol()));
         if (ctx.ADRESS() != null) {
             PointerContext p = new PointerContext(Type.getIntTypeForPointer(typeContext.getType()), false, ctx.ID(0).getSymbol());
-            p.addPointValue(id.getValue().getRealValue(), 0);
+            if (id.getValue() != null) {
+                p.addPointValue(id.getValue(), 0);
+            }
             return p;
         }
-        return new PointerContext(Type.getIntTypeForPointer(typeContext.getType()), false, ctx.ID(0).getSymbol(), id.getValue());
+        //return new PointerContext(Type.getIntTypeForPointer(typeContext.getType()), false, ctx.ID(0).getSymbol(), id.getValue());
+        return id;
+
     }
 
     @Override
@@ -137,44 +146,68 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     //<editor-fold defaultstate="collapsed" desc="expr">
     @Override
     public Object visitExprPlus(CGrammarParser.ExprPlusContext ctx) {
-        Context exprContext = (Context) visit(ctx.expr());
-        Context termContext = (Context) visit(ctx.term());
-        return Util.getInstance().sumOp(exprContext, termContext);
+        Object exprContext = visit(ctx.expr());
+        Object termContext = visit(ctx.term());
+        if (exprContext instanceof BlockResult) {
+            exprContext = ((BlockResult) exprContext).getResult();
+        }
+        if (termContext instanceof BlockResult) {
+            termContext = ((BlockResult) termContext).getResult();
+        }
+        return Util.getInstance().sumOp((Context) exprContext, (Context) termContext);
     }
 
     @Override
     public Object visitExprMin(CGrammarParser.ExprMinContext ctx) {
-        Context exprContext = (Context) visit(ctx.expr());
-        Context termContext = (Context) visit(ctx.term());
-        return Util.getInstance().minusOp(exprContext, termContext);
+        Object exprContext = visit(ctx.expr());
+        Object termContext = visit(ctx.term());
+        if (exprContext instanceof BlockResult) {
+            exprContext = ((BlockResult) exprContext).getResult();
+        }
+        if (termContext instanceof BlockResult) {
+            termContext = ((BlockResult) termContext).getResult();
+        }
+        return Util.getInstance().sumOp((Context) exprContext, (Context) termContext);
     }
 
     @Override
     public Object visitExprHided(CGrammarParser.ExprHidedContext ctx) {
         Context exprContext = (Context) visit(ctx.expr());
         Context termContext = (Context) visit(ctx.term());
-        return Util.getInstance().sumOp(exprContext, termContext);
+        return Util.getInstance().minusOp(exprContext, termContext);
     }
 
     @Override
     public Object visitExprTerm(CGrammarParser.ExprTermContext ctx) {
-        return (Context) visit(ctx.term());
+        return visit(ctx.term());
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="term">
     @Override
     public Object visitTermMult(CGrammarParser.TermMultContext ctx) {
-        Context termContext = (Context) visit(ctx.term());
-        Context factContext = (Context) visit(ctx.fact());
-        return Util.getInstance().multOp(termContext, factContext);
+        Object exprContext = visit(ctx.term());
+        Object termContext = visit(ctx.fact());
+        if (exprContext instanceof BlockResult) {
+            exprContext = ((BlockResult) exprContext).getResult();
+        }
+        if (termContext instanceof BlockResult) {
+            termContext = ((BlockResult) termContext).getResult();
+        }
+        return Util.getInstance().multOp((Context) exprContext, (Context) termContext);
     }
 
     @Override
     public Object visitTermDiv(CGrammarParser.TermDivContext ctx) {
-        Context termContext = (Context) visit(ctx.term());
-        Context factContext = (Context) visit(ctx.fact());
-        return Util.getInstance().divOp(termContext, factContext);
+        Object exprContext = visit(ctx.term());
+        Object termContext = visit(ctx.fact());
+        if (exprContext instanceof BlockResult) {
+            exprContext = ((BlockResult) exprContext).getResult();
+        }
+        if (termContext instanceof BlockResult) {
+            termContext = ((BlockResult) termContext).getResult();
+        }
+        return Util.getInstance().divOp((Context) exprContext, (Context) termContext);
     }
 
     @Override
@@ -441,6 +474,7 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         for (CGrammarParser.CmdContext t : ctx.cmd()) {
             Object result = visit(t);
             if (result instanceof BlockResult && ((BlockResult) result).isBecauseOfReturn()) {
+                CallStack.getInstance().deleteCall();
                 return result;
             }
         }
@@ -465,16 +499,20 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     @Override
     public Object visitIfStmElse(CGrammarParser.IfStmElseContext ctx) {
         if ((Boolean) visit(ctx.cond())) {
-            BlockResult result = (BlockResult) visit(ctx.block(0));
-            if (result.isBecauseOfReturn()) {
-                CallStack.getInstance().deleteCall();
-                return result;
+            Object result = visit(ctx.block(0));
+            if (result instanceof BlockResult) {
+                if (((BlockResult) result).isBecauseOfReturn()) {
+                    CallStack.getInstance().deleteCall();
+                    return result;
+                }
             }
         } else {
-            BlockResult result = (BlockResult) visit(ctx.block(1));
-            if (result.isBecauseOfReturn()) {
-                CallStack.getInstance().deleteCall();
-                return result;
+            Object result = visit(ctx.block(1));
+            if (result instanceof BlockResult) {
+                if (((BlockResult) result).isBecauseOfReturn()) {
+                    CallStack.getInstance().deleteCall();
+                    return result;
+                }
             }
         }
         return new PrimitiveContext(Type.INT, true, ctx.IF().getSymbol());
@@ -488,6 +526,7 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         for (CGrammarParser.CmdContext t : ctx.cmd()) {
             Object result = visit(t);
             if (result instanceof BlockResult && ((BlockResult) result).isBecauseOfReturn()) {
+                CallStack.getInstance().deleteCall();
                 return result;
             }
         }
@@ -506,8 +545,15 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         } else {
             params = new ArrayList<>();
         }
+        ArrayList<Context> args = (ArrayList<Context>) func.getValue().getRealValue();
+        ArrayList<Context> newArgs = new ArrayList<>();
+        for (int c = 0; c < args.size(); c++) {
+            Context aux = Util.getInstance().createCorrectContextInstance(args.get(c), args.get(c).getToken());
+            aux.setValue(params.get(c).getValue());
+            newArgs.add(aux);
+        }
         Util.getInstance().putFuncInStack(true);
-        Util.getInstance().declareMultVar(params);
+        Util.getInstance().declareMultVar(newArgs);
         Object result = visit(func.getTreeNode());
         CallStack.getInstance().deleteCall();
         return result;
@@ -517,7 +563,7 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     //<editor-fold defaultstate="collapsed" desc="retrn">
     @Override
     public Object visitRetrn(CGrammarParser.RetrnContext ctx) {
-        return visit(ctx.expr());
+        return new BlockResult(true, visit(ctx.expr()));
     }
     //</editor-fold>
 
@@ -536,12 +582,12 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
                 case Type.POINTER_INT: {
                     //Integer n = Util.getInstance().stringIntConvertion(s.nextLine());
                     input = s.nextInt();
-                    ((PointerContext) realArgs.get(params.indexOf(t))).addPointValue(input, 0);
+                    ((PointerContext) realArgs.get(params.indexOf(t))).addPointRealValue(input, 0);
                     break;
                 }
                 case Type.POINTER_DOUBLE: {
                     input = s.nextDouble();
-                    ((PointerContext) realArgs.get(params.indexOf(t))).addPointValue(input, 0);
+                    ((PointerContext) realArgs.get(params.indexOf(t))).addPointRealValue(input, 0);
                     break;
                 }
                 case Type.POINTER_CHAR: {
@@ -592,7 +638,7 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         Context exprContext = (Context) visit(ctx.expr());
         Context var = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
         PointerContext p = new PointerContext(var.getType(), var.getConstant(), var.getToken());
-        ((PointerContext) var).addPointValue(p.getPointValue(((Integer) exprContext.getValue().getRealValue())), 0);
+        ((PointerContext) var).addPointRealValue(p.getPointValue(((Integer) exprContext.getValue().getRealValue())), 0);
         return p;
     }
     //</editor-fold>
@@ -610,9 +656,13 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         ArrayList<Context> realArgs = (ArrayList<Context>) visit(ctx.printargs());
         String output = ctx.STR().getText();
         for (Context t : realArgs) {
-            output = output.replaceFirst("(%d)|(%f)|(%c)|(%s)", t.getValue().getRealValue().toString());
+            if (t.getValue() != null) {
+                output = output.replaceFirst("(%d)|(%f)|(%c)|(%s)", t.getValue().getRealValue().toString());
+            } else {
+                output = output.replaceFirst("(%d)|(%f)|(%c)|(%s)", "");
+            }
         }
-        System.out.println(output);
+        System.out.println(output.substring(1, output.length() - 1));
         return new FunctionContext(Type.FUNCTION_MARK, ctx.PRINTF().getSymbol());
     }
     //</editor-fold>
@@ -631,8 +681,16 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     @Override
     public Object visitPrintargsSingle(CGrammarParser.PrintargsSingleContext ctx) {
         ArrayList<Context> args = new ArrayList<>();
-        Context exprContext = (Context) visit(ctx.expr());
-        args.add(exprContext);
+        Object exprContext = visit(ctx.expr());
+        if (exprContext instanceof BlockResult) {
+            if (((BlockResult) exprContext).getResult() instanceof BlockResult) {
+                args.add((Context) ((BlockResult) ((BlockResult) exprContext).getResult()).getResult());
+            } else{
+                 args.add((Context) ((BlockResult) exprContext).getResult());
+            }
+        } else {
+            args.add((Context) exprContext);
+        }
         return args;
     }
     //</editor-fold>
@@ -664,7 +722,7 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         Context indexContext = (Context) visit(ctx.expr(0));
         Context exprContext = (Context) visit(ctx.expr(1));
         PointerContext var = (PointerContext) Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
-        var.addPointValue(exprContext.getValue().getRealValue(), (Integer) indexContext.getValue().getRealValue());
+        var.addPointRealValue(exprContext.getValue().getRealValue(), (Integer) indexContext.getValue().getRealValue());
         return var;
     }
 
@@ -757,5 +815,5 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         }
         return CGrammarLexer.NEQ;
     }
-    //</editor-fold>    
+    //</editor-fold>        
 }

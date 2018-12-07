@@ -357,7 +357,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
             args.add(FuncTable.getInstance().getFunc(ctx.ID().getText()));
             Util.getInstance().error(ErrorType.SYMB_ALREADY_EXISTS, args);
             return null;
-        }        
+        }
         if (visit(ctx.block()) != null) {
             boolean returnCheck = false;
             for (CGrammarParser.CmdContext c : ctx.block().cmd()) {
@@ -374,9 +374,8 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
                 return null;
             }
             FunctionContext func = new FunctionContext(returnType.getType(), ctx.ID().getSymbol(), params, ctx);
-            if (Util.getInstance().declareFunction(func)) {
-                Util.getInstance().putFuncInStack(true);
-                Util.getInstance().declareMultVar(params);
+            if (!Util.getInstance().declareFunction(func)) {
+                CallStack.getInstance().deleteCall();
                 return returnType;
             }
         }
@@ -599,7 +598,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
         return new PrimitiveContext(Type.INT, true, ctx.CASE().getSymbol());
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="ifstm">
     @Override
     public Object visitIfStm(CGrammarParser.IfStmContext ctx) {
@@ -751,9 +750,9 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
             ArrayList<Object> args = new ArrayList<>();
             args.add(new PointerContext(Type.POINTER_CHAR, true, ctx.PRINTF().getSymbol()));
             Util.getInstance().error(ErrorType.PRINTF_ARGS_UNEXPECTED, args);
-            return new FunctionContext(Type.FUNCTION_MARK, ctx.PRINTF().getSymbol());
+            return null;
         }
-        return null;
+        return new FunctionContext(Type.FUNCTION_MARK, ctx.PRINTF().getSymbol());
     }
 
     @Override
@@ -897,7 +896,6 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="cndts">
-
     @Override
     public Object visitCndtsRelop(CGrammarParser.CndtsRelopContext ctx) {
         Integer op = (Integer) visit(ctx.relop());
@@ -907,7 +905,7 @@ public class SemanticVisitor extends CGrammarBaseVisitor<Object> {
             return expr1;
         }
         return null;
-    }    
+    }
 
     @Override
     public Object visitCndtsCond(CGrammarParser.CndtsCondContext ctx) {

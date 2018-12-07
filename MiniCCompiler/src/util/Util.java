@@ -395,10 +395,10 @@ public class Util {
     public Context createCorrectContextInstance(Context previousContext, Token newToken) {
         Integer basicType = Type.getBasicType(previousContext.getType());
         if (Type.isPrimitive(basicType)) {
-            return new PrimitiveContext(previousContext.getType(), previousContext.getConstant(), newToken);
+            return new PrimitiveContext(previousContext.getType(), previousContext.getConstant(), newToken, previousContext.getValue());
         }
         if (basicType == Type.POINTER) {
-            return new PointerContext(previousContext.getType(), previousContext.getConstant(), newToken);
+            return new PointerContext(previousContext.getType(), previousContext.getConstant(), newToken, previousContext.getValue());
         }
         if (basicType == Type.POINTER_POINTER) {
             return new PointerPointerContext(previousContext.getType(), previousContext.getConstant(), newToken);

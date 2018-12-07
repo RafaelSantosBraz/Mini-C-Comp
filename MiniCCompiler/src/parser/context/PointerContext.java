@@ -16,7 +16,7 @@ import org.antlr.v4.runtime.Token;
 public class PointerContext extends Context {
     
     public PointerContext(Integer type, Boolean constant, Token token) {
-        super(type, constant, token, new Value(new HashMap<Integer, Object>()));
+        super(type, constant, token, new Value(new HashMap<Integer, Value>()));
     }
     
     public PointerContext(Integer type, Boolean constant, Token token, Value value) {
@@ -24,23 +24,27 @@ public class PointerContext extends Context {
     }
 
     // métodos para tratar os valores do ponteiro
-    public void addPointValue(Object value, Integer pos) {
-        ((HashMap<Integer, Object>) getValue().getRealValue()).put(pos, value);
+    public void addPointValue(Value value, Integer pos) {
+        ((HashMap<Integer, Value>) getValue().getRealValue()).put(pos, value);
+    }
+    
+    public void addPointRealValue(Object value, Integer pos) {
+        ((HashMap<Integer, Value>) getValue().getRealValue()).get(pos).setRealValue(value);
     }
     
     public Object getPointValue(Integer pos) {
-        return ((HashMap<Integer, Object>) getValue().getRealValue()).get(pos);
+        return ((HashMap<Integer, Value>) getValue().getRealValue()).get(pos);
     }
     
     public void addPointValueListFromContext(ArrayList<Context> args) {
         for (int c = 0; c < args.size(); c++) {
-            addPointValue(args.get(c).getValue().getRealValue(), c);
+            addPointValue(args.get(c).getValue(), c);
         }
     }
     
      public void addPointValueListFromCharArray(char args[]) {
         for (int c = 0; c < args.length; c++) {
-            addPointValue(args[c], c);
+            addPointRealValue(args[c], c);
         }
     }
 }

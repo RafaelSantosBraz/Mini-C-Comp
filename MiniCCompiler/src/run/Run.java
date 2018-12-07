@@ -67,8 +67,11 @@ public class Run {
         } else {
             CallStack.getInstance().reset();            
             InterpreterVisitor interpreter = new InterpreterVisitor();
+            System.out.println("*** INÍCIO DA EXECUÇÃO! ***");
             interpreter.visit(FuncTable.getInstance().getFunc("main").getTreeNode());
         }
+        System.out.println("*** FIM DA EXECUÇÃO! ***");
+        //CallStack t = CallStack.getInstance();
     }
 
     public static void exibir(ParseTree tree) {
