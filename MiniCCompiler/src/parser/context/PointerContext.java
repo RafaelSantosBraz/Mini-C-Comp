@@ -23,6 +23,10 @@ public class PointerContext extends Context {
         super(type, constant, token, new Value(new HashMap<Integer, Value>()));
         addPointRealValue(value, 0);
     }
+    
+    public PointerContext(Integer type, Boolean constant, Token token, Context context) {
+        super(type, constant, token, context.getValue());
+    }
 
     // métodos para tratar os valores do ponteiro
     public void addPointValue(Value value, Integer pos) {
@@ -33,8 +37,12 @@ public class PointerContext extends Context {
         ((HashMap<Integer, Value>) getValue().getRealValue()).get(pos).setRealValue(value);
     }
     
-    public Object getPointValue(Integer pos) {
+    public Value getPointValue(Integer pos) {
         return ((HashMap<Integer, Value>) getValue().getRealValue()).get(pos);
+    }
+    
+    public Object getPointRealValue(Integer pos) {
+        return ((HashMap<Integer, Value>) getValue().getRealValue()).get(pos).getRealValue();
     }
     
     public void addPointValueListFromContext(ArrayList<Context> args) {

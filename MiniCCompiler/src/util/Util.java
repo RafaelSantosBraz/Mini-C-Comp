@@ -251,7 +251,7 @@ public class Util {
         Integer promoted = Type.promoteType(context.getType());
         if (promoted != null) {
             if (Type.getBasicType(promoted) == Type.POINTER) {
-                return new PointerContext(promoted, context.getConstant(), context.getToken());
+                return new PointerContext(promoted, context.getConstant(), context.getToken(), context.getValue().getRealValue());
             }
             return new PointerPointerContext(promoted, context.getConstant(), context.getToken());
         }
