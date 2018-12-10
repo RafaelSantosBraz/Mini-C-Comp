@@ -43,7 +43,7 @@ public class Util {
         }
         return FuncTable.getInstance().getFunc(c.getToken().getText());
     }
-    
+
     public void putFuncInStack(boolean isLocked) {
         CallStack.getInstance().setCall(new Call(isLocked));
     }
@@ -60,10 +60,10 @@ public class Util {
         return true;
     }
 
-    public boolean varIsThere(Context c){
-        return CallStack.getInstance().isthere(c.getToken().getText());                   
+    public boolean varIsThere(Context c) {
+        return CallStack.getInstance().isthere(c.getToken().getText());
     }
-    
+
     public Context getVar(Context c) {
         if (!CallStack.getInstance().isthere(c.getToken().getText())) {
             ArrayList<Object> args = new ArrayList<>();
@@ -87,8 +87,14 @@ public class Util {
     }
 
     public Double getDoubleFromContext(Context c) {
-        if (c.getValue().getRealValue() != null) {
-            return ((Number) c.getValue().getRealValue()).doubleValue();
+        if (c instanceof PointerContext) {
+            if (((PointerContext) c).getPointRealValue(0) != null) {
+                return ((Number) ((PointerContext) c).getPointRealValue(0)).doubleValue();
+            }
+        } else {
+            if (c.getValue().getRealValue() != null) {
+                return ((Number) c.getValue().getRealValue()).doubleValue();
+            }
         }
         return 0.0;
     }
@@ -98,7 +104,7 @@ public class Util {
         Double n2 = getDoubleFromContext(c2);
         Integer newType = toUpperType(c1, c2);
         Boolean constant = (c1.getConstant() && c2.getConstant());
-        return new PrimitiveContext(newType, constant, c1.getToken(), new Value(doubleToType(newType, n1 + n2)));
+        return new PrimitiveContext(newType, constant, c1.getToken(), doubleToType(newType, n1 + n2));
     }
 
     public Context minusOp(Context c1, Context c2) {
@@ -106,7 +112,7 @@ public class Util {
         Double n2 = getDoubleFromContext(c2);
         Integer newType = toUpperType(c1, c2);
         Boolean constant = (c1.getConstant() && c2.getConstant());
-        return new PrimitiveContext(newType, constant, c1.getToken(), new Value(doubleToType(newType, n1 - n2)));
+        return new PrimitiveContext(newType, constant, c1.getToken(), doubleToType(newType, n1 - n2));
     }
 
     public Context multOp(Context c1, Context c2) {
@@ -114,7 +120,7 @@ public class Util {
         Double n2 = getDoubleFromContext(c2);
         Integer newType = toUpperType(c1, c2);
         Boolean constant = (c1.getConstant() && c2.getConstant());
-        return new PrimitiveContext(newType, constant, c1.getToken(), new Value(doubleToType(newType, n1 * n2)));
+        return new PrimitiveContext(newType, constant, c1.getToken(), doubleToType(newType, n1 * n2));
     }
 
     public Context divOp(Context c1, Context c2) {
@@ -122,7 +128,7 @@ public class Util {
         Double n2 = getDoubleFromContext(c2);
         Integer newType = toUpperType(c1, c2);
         Boolean constant = (c1.getConstant() && c2.getConstant());
-        return new PrimitiveContext(newType, constant, c1.getToken(), new Value(doubleToType(newType, n1 / n2)));
+        return new PrimitiveContext(newType, constant, c1.getToken(), doubleToType(newType, n1 / n2));
     }
 
     public Object doubleToType(Integer targetType, Double n) {
@@ -185,10 +191,21 @@ public class Util {
             params.addAll(printfParamsByType(context, Type.CHAR));
         }
         params.sort((o1, o2) -> {
-            if ((Integer) o1.getValue().getRealValue() < (Integer) o2.getValue().getRealValue()) {
+            int orderO1, orderO2;
+            if (o1 instanceof PrimitiveContext) {
+                orderO1 = (Integer) o1.getValue().getRealValue();
+            } else {
+                orderO1 = (Integer) ((PointerContext) o1).getPointRealValue(0);
+            }
+            if (o2 instanceof PrimitiveContext) {
+                orderO2 = (Integer) o2.getValue().getRealValue();
+            } else {
+                orderO2 = (Integer) ((PointerContext) o2).getPointRealValue(0);
+            }
+            if (orderO1 > orderO2) {
                 return 1;
             }
-            if ((Integer) o1.getValue().getRealValue() < (Integer) o2.getValue().getRealValue()) {
+            if (orderO1 < orderO2) {
                 return -1;
             }
             return 0;
@@ -204,28 +221,28 @@ public class Util {
             case Type.INT: {
                 Integer pos;
                 for (; (pos = call.indexOf("%d", start)) != -1; start = pos + 1) {
-                    params.add(new PrimitiveContext(Type.INT, true, context.getToken(), new Value(pos)));
+                    params.add(new PrimitiveContext(Type.INT, true, context.getToken(), pos));
                 }
                 break;
             }
             case Type.DOUBLE: {
                 Integer pos;
                 for (; (pos = call.indexOf("%f", start)) != -1; start = pos + 1) {
-                    params.add(new PrimitiveContext(Type.DOUBLE, true, context.getToken(), new Value(pos)));
+                    params.add(new PrimitiveContext(Type.DOUBLE, true, context.getToken(), pos));
                 }
                 break;
             }
             case Type.POINTER_CHAR: {
                 Integer pos;
                 for (; (pos = call.indexOf("%s", start)) != -1; start = pos + 1) {
-                    params.add(new PointerContext(Type.CHAR, true, context.getToken(), new Value(pos)));
+                    params.add(new PointerContext(Type.POINTER_CHAR, true, context.getToken(), pos));
                 }
                 break;
             }
             case Type.CHAR: {
                 Integer pos;
                 for (; (pos = call.indexOf("%c", start)) != -1; start = pos + 1) {
-                    params.add(new PrimitiveContext(Type.CHAR, true, context.getToken(), new Value(pos)));
+                    params.add(new PrimitiveContext(Type.CHAR, true, context.getToken(), pos));
                 }
                 break;
             }
@@ -237,7 +254,7 @@ public class Util {
         Integer lowerType = Type.lowerType(context.getType());
         if (lowerType != null) {
             if (Type.isPrimitive(lowerType)) {
-                return new PrimitiveContext(lowerType, context.getConstant(), context.getToken());
+                return new PrimitiveContext(lowerType, context.getConstant(), context.getToken(), ((PointerContext) context).getPointRealValue(0));
             }
             return new PointerContext(lowerType, context.getConstant(), context.getToken());
         }

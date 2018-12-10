@@ -36,7 +36,7 @@ public class Run {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {       
         String filename = "test.c";
         PreProcessor prep = new PreProcessor(filename);
         prep.doPrep();

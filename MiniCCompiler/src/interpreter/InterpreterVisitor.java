@@ -47,7 +47,7 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
 
     @Override
     public Object visitNumDouble(CGrammarParser.NumDoubleContext ctx) {
-        return new PrimitiveContext(Type.DOUBLE, true, ctx.NDOUBLE().getSymbol(), Util.getInstance().stringIntConvertion(ctx.NDOUBLE().getText()));
+        return new PrimitiveContext(Type.DOUBLE, true, ctx.NDOUBLE().getSymbol(), Util.getInstance().stringDoubleConvertion(ctx.NDOUBLE().getText()));
     }
     //</editor-fold>
 

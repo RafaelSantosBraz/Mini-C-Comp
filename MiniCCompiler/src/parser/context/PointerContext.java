@@ -34,7 +34,11 @@ public class PointerContext extends Context {
     }
     
     public void addPointRealValue(Object value, Integer pos) {
-        ((HashMap<Integer, Value>) getValue().getRealValue()).get(pos).setRealValue(value);
+        if (((HashMap<Integer, Value>) getValue().getRealValue()).get(pos) != null) {
+            ((HashMap<Integer, Value>) getValue().getRealValue()).get(pos).setRealValue(value);
+        } else {
+            addPointValue(new Value(value), pos);
+        }
     }
     
     public Value getPointValue(Integer pos) {
@@ -51,7 +55,7 @@ public class PointerContext extends Context {
         }
     }
     
-     public void addPointValueListFromCharArray(char args[]) {
+    public void addPointValueListFromCharArray(char args[]) {
         for (int c = 0; c < args.length; c++) {
             addPointRealValue(args[c], c);
         }
