@@ -65,12 +65,12 @@ public class Run {
             ArrayList<Object> params = new ArrayList<>();
             Util.getInstance().error(ErrorType.MAIN_DOES_NOT_EXIST, params);
         } else {
-            CallStack.getInstance().reset();            
+            CallStack.getInstance().reset(prog);            
             InterpreterVisitor interpreter = new InterpreterVisitor();
             System.out.println("*** INÍCIO DA EXECUÇÃO! ***");
             interpreter.visit(FuncTable.getInstance().getFunc("main").getTreeNode());
-        }
-        System.out.println("*** FIM DA EXECUÇÃO! ***");
+            System.out.println("*** FIM DA EXECUÇÃO! ***");
+        }        
         //CallStack t = CallStack.getInstance();
     }
 

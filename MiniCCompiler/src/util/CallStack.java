@@ -5,7 +5,9 @@
  */
 package util;
 
+import interpreter.InterpreterVisitor;
 import java.util.Stack;
+import parser.CGrammarParser;
 import parser.context.Context;
 
 /**
@@ -32,9 +34,9 @@ public class CallStack {
     }
 
     public boolean isthere(String name) {
-       for (int c = stack.size() - 1; c >= 0; c--){
+        for (int c = stack.size() - 1; c >= 0; c--) {
             if (stack.get(c).isLock()) {
-                if (stack.get(c).isThere(name)){
+                if (stack.get(c).isThere(name)) {
                     return true;
                 }
                 break;
@@ -55,10 +57,10 @@ public class CallStack {
     }
 
     public Context getVar(String name) {
-        for (int c = stack.size() - 1; c >= 0; c--){
+        for (int c = stack.size() - 1; c >= 0; c--) {
             if (stack.get(c).isLock()) {
                 Context var = stack.get(c).getVar(name);
-                if (var != null){
+                if (var != null) {
                     return var;
                 }
                 break;
@@ -70,14 +72,18 @@ public class CallStack {
         }
         return stack.get(0).getVar(name);
     }
-    
-    public Call deleteCall(){
+
+    public Call deleteCall() {
         return stack.pop();
     }
-    
-    public void reset(){
-        Call global = stack.get(0);
+
+    public void reset(CGrammarParser.ProgContext prog) {
+        //Call global = stack.get(0);
         stack.clear();
-        stack.push(global);
+        stack.push(new Call(true));
+        InterpreterVisitor interpreter = new InterpreterVisitor();
+        prog.global().forEach((t) -> {
+            interpreter.visit(t);
+        });
     }
 }

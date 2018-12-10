@@ -8,6 +8,7 @@ package util;
 import java.util.ArrayList;
 import java.util.Objects;
 import org.antlr.v4.runtime.Token;
+import parser.CGrammarParser;
 import parser.ErrorType;
 import parser.Type;
 import parser.context.Context;
@@ -15,7 +16,6 @@ import parser.context.FunctionContext;
 import parser.context.PointerContext;
 import parser.context.PointerPointerContext;
 import parser.context.PrimitiveContext;
-import parser.context.Value;
 
 /**
  *
@@ -32,8 +32,8 @@ public class Util {
         }
         return instance;
     }
-    //</editor-fold>    
-
+    //</editor-fold>   
+    
     public Context getFuncFromTable(Context c) {
         if (!FuncTable.getInstance().isThere(c.getToken().getText())) {
             ArrayList<Object> args = new ArrayList<>();

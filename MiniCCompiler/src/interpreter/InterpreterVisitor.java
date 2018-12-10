@@ -27,7 +27,7 @@ import util.CallStack;
  */
 public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
 
-    //private CallStack c = CallStack.getInstance();
+    private CallStack c = CallStack.getInstance();
     //<editor-fold defaultstate="collapsed" desc="global">
     @Override
     public Object visitGlobal(CGrammarParser.GlobalContext ctx) {
@@ -89,7 +89,7 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         Context typeContext = (Context) visit(ctx.type());
         Context id = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID(1).getSymbol()));
         if (ctx.ADRESS() != null) {
-            return new PointerContext(Type.getIntTypeForPointer(typeContext.getType()), false, ctx.ID(0).getSymbol(), id.getValue());
+            return new PointerContext(Type.getIntTypeForPointer(typeContext.getType()), false, ctx.ID(0).getSymbol(), id);
         }
         return new PointerContext(Type.getIntTypeForPointer(typeContext.getType()), false, ctx.ID(0).getSymbol(), id);
     }
@@ -224,7 +224,8 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
 
     @Override
     public Object visitDownfactContent(CGrammarParser.DownfactContentContext ctx) {
-        return ((PointerContext) Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()))).getPointValue(0);
+        PointerContext var = (PointerContext) Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        return new PrimitiveContext(Type.lowerType(var.getType()), var.getConstant(), var.getToken(), var.getPointValue(0));
     }
 
     @Override
@@ -608,12 +609,10 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
         ArrayList<Context> realArgs = (ArrayList<Context>) visit(ctx.printargs());
         String output = ctx.STR().getText();
         for (Context t : realArgs) {
-            if (t.getValue() != null) {
-                if (t instanceof PrimitiveContext) {
-                    output = output.replaceFirst("(%d)|(%f)|(%c)|(%s)", t.getValue().getRealValue().toString());
-                } else {
-                    output = output.replaceFirst("(%d)|(%f)|(%c)|(%s)", ((PointerContext) t).getPointRealValue(0).toString());
-                }
+            if (t instanceof PrimitiveContext && t.getValue().getRealValue() != null) {
+                output = output.replaceFirst("(%d)|(%f)|(%c)|(%s)", t.getValue().getRealValue().toString());
+            } else if (t instanceof PointerContext && t.getType() != Type.POINTER_CHAR && ((PointerContext) t).getPointRealValue(0) != null) {
+                output = output.replaceFirst("(%d)|(%f)|(%c)|(%s)", ((PointerContext) t).getPointRealValue(0).toString());
             } else {
                 output = output.replaceFirst("(%d)|(%f)|(%c)|(%s)", "");
             }
@@ -625,7 +624,8 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
 
     //<editor-fold defaultstate="collapsed" desc="printargs">
     @Override
-    public Object visitPrintargsCompose(CGrammarParser.PrintargsComposeContext ctx) {
+    public Object visitPrintargsCompose(CGrammarParser.PrintargsComposeContext ctx
+    ) {
         ArrayList<Context> args = new ArrayList<>();
         Context exprContext = (Context) visit(ctx.expr());
         args.add(exprContext);
@@ -635,7 +635,8 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitPrintargsSingle(CGrammarParser.PrintargsSingleContext ctx) {
+    public Object visitPrintargsSingle(CGrammarParser.PrintargsSingleContext ctx
+    ) {
         ArrayList<Context> args = new ArrayList<>();
         Context exprContext = (Context) visit(ctx.expr());
         args.add(exprContext);
@@ -646,7 +647,8 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     //<editor-fold defaultstate="collapsed" desc="atrib">
     @Override
 
-    public Object visitAtribSimple(CGrammarParser.AtribSimpleContext ctx) {
+    public Object visitAtribSimple(CGrammarParser.AtribSimpleContext ctx
+    ) {
         Context exprContext = (Context) visit(ctx.expr());
         Context var = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
         if (var instanceof PointerContext) {
@@ -658,15 +660,17 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitAtribPointer(CGrammarParser.AtribPointerContext ctx) {
+    public Object visitAtribPointer(CGrammarParser.AtribPointerContext ctx
+    ) {
         Context exprContext = (Context) visit(ctx.expr());
-        Context var = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));        
-        ((PointerContext)var).addPointRealValue(exprContext.getValue().getRealValue(), 0);
+        Context var = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
+        ((PointerContext) var).addPointRealValue(exprContext.getValue().getRealValue(), 0);
         return var;
     }
 
     @Override
-    public Object visitAtribArray(CGrammarParser.AtribArrayContext ctx) {
+    public Object visitAtribArray(CGrammarParser.AtribArrayContext ctx
+    ) {
         Context indexContext = (Context) visit(ctx.expr(0));
         Context exprContext = (Context) visit(ctx.expr(1));
         PointerContext var = (PointerContext) Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
@@ -675,14 +679,16 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitAtribPlusPlus(CGrammarParser.AtribPlusPlusContext ctx) {
+    public Object visitAtribPlusPlus(CGrammarParser.AtribPlusPlusContext ctx
+    ) {
         Context var = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
         var.getValue().setRealValue(Util.getInstance().sumOp(var, new PrimitiveContext(Type.INT, true, ctx.ID().getSymbol(), 1)).getValue().getRealValue());
         return var;
     }
 
     @Override
-    public Object visitAtribMinusMinus(CGrammarParser.AtribMinusMinusContext ctx) {
+    public Object visitAtribMinusMinus(CGrammarParser.AtribMinusMinusContext ctx
+    ) {
         Context var = Util.getInstance().getVar(new PrimitiveContext(Type.INT, false, ctx.ID().getSymbol()));
         var.getValue().setRealValue(Util.getInstance().minusOp(var, new PrimitiveContext(Type.INT, true, ctx.ID().getSymbol(), 1)).getValue().getRealValue());
         return var;
@@ -691,31 +697,36 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
 
     //<editor-fold defaultstate="collapsed" desc="cond">
     @Override
-    public Object visitCondOr(CGrammarParser.CondOrContext ctx) {
+    public Object visitCondOr(CGrammarParser.CondOrContext ctx
+    ) {
         return ((Boolean) visit(ctx.cond()) || (Boolean) visit(ctx.cdand()));
     }
 
     @Override
-    public Object visitCondAnd(CGrammarParser.CondAndContext ctx) {
+    public Object visitCondAnd(CGrammarParser.CondAndContext ctx
+    ) {
         return visit(ctx.cdand());
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="cdand">
     @Override
-    public Object visitCdandAnd(CGrammarParser.CdandAndContext ctx) {
+    public Object visitCdandAnd(CGrammarParser.CdandAndContext ctx
+    ) {
         return ((Boolean) visit(ctx.cdand()) && (Boolean) visit(ctx.cndts()));
     }
 
     @Override
-    public Object visitCdandCndts(CGrammarParser.CdandCndtsContext ctx) {
+    public Object visitCdandCndts(CGrammarParser.CdandCndtsContext ctx
+    ) {
         return visit(ctx.cndts());
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="cndts">
     @Override
-    public Object visitCndtsRelop(CGrammarParser.CndtsRelopContext ctx) {
+    public Object visitCndtsRelop(CGrammarParser.CndtsRelopContext ctx
+    ) {
         Integer op = (Integer) visit(ctx.relop());
         Context expr1 = (Context) visit(ctx.expr(0));
         Context expr2 = (Context) visit(ctx.expr(1));
@@ -738,14 +749,16 @@ public class InterpreterVisitor extends CGrammarBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitCndtsCond(CGrammarParser.CndtsCondContext ctx) {
+    public Object visitCndtsCond(CGrammarParser.CndtsCondContext ctx
+    ) {
         return visit(ctx.cond());
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="relop">
     @Override
-    public Object visitRelop(CGrammarParser.RelopContext ctx) {
+    public Object visitRelop(CGrammarParser.RelopContext ctx
+    ) {
         if (ctx.MOR() != null) {
             return CGrammarLexer.MOR;
         }
