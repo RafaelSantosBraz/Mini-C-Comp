@@ -22,7 +22,7 @@ public class Context {
         this.type = type;
         this.constant = constant;
         this.token = token;
-        value = null;
+        value = new Value();
     }
 
     public Context(Integer type, Boolean constant, Token token, Value value) {

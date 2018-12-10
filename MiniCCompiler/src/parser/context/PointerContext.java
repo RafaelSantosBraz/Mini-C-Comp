@@ -19,8 +19,9 @@ public class PointerContext extends Context {
         super(type, constant, token, new Value(new HashMap<Integer, Value>()));
     }
     
-    public PointerContext(Integer type, Boolean constant, Token token, Value value) {
-        super(type, constant, token, value);
+    public PointerContext(Integer type, Boolean constant, Token token, Object value) {
+        super(type, constant, token, new Value(new HashMap<Integer, Value>()));
+        addPointRealValue(value, 0);
     }
 
     // métodos para tratar os valores do ponteiro
